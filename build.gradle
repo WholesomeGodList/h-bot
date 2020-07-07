@@ -1,0 +1,64 @@
+plugins {
+    id'application'
+    id'com.github.johnrengelman.shadow' version '5.2.0'
+}
+
+def jdaVersion = '4.1.1_166'
+
+group 'stinggy.hbot'
+version '1.0-SNAPSHOT'
+mainClassName = 'bot.hBotMain'
+
+sourceCompatibility = targetCompatibility = 14
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter:5.6.2"
+    implementation "net.dv8tion:JDA:$jdaVersion"
+    implementation 'org.apache.logging.log4j:log4j-core:2.13.3'
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.3'
+    implementation 'org.jsoup:jsoup:1.12.1'
+    implementation 'org.apache.commons:commons-text:1.8'
+    implementation 'org.json:json:20190722'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.10'
+    implementation 'org.apache.httpcomponents:httpcore:4.4.12'
+    implementation 'org.xerial:sqlite-jdbc:3.7.2'
+
+}
+
+test {
+    useJUnitPlatform()
+}
+
+artifacts {
+    shadowJar
+}
+
+jar {
+    manifest {
+        attributes 'Class-Path': '.'
+        attributes 'Multi-Release': 'true'
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.runtimeClasspath]
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += "--enable-preview"
+}
+
+tasks.withType(Test) {
+    jvmArgs += "--enable-preview"
+}
+
+tasks.withType(JavaExec) {
+    jvmArgs += '--enable-preview'
+}
+
+compileJava.options.encoding = 'UTF-8'
