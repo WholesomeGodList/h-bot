@@ -3,11 +3,15 @@ package bot.modules;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jsoup.HttpStatusException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
 public class EmbedGenerator {
+	private static final Logger logger = LogManager.getLogger(EmbedGenerator.class);
 	/**
 	 * Creates a MessageEmbed with a random meme for the cursed numbers.
 	 * @return A MessageEmbed with a meme about 177013.
@@ -76,14 +80,23 @@ public class EmbedGenerator {
 			} else if (argType == Validator.ArgType.EHENTAI) {
 				return getEHEmbed(url);
 			}
-		} catch
+		} catch (HttpStatusException e) {
+			logger.info("Building an info embed threw a connection exception");
+			logger.info("HTTP status code: " + e.getStatusCode());
+			throw e;
+		} catch (IOException e) {
+			logger.info("An unexpected IOException occurred while building the info embed.");
+			e.printStackTrace();
+			throw e;
+		}
 		throw new IllegalStateException("Illegal ArgType provided.");
 	}
 
-	private static MessageEmbed getNHEmbed(String url) {
+	private static MessageEmbed getNHEmbed(String url) throws IOException {
+
 	}
 
-	private static MessageEmbed getEHEmbed(String url) {
+	private static MessageEmbed getEHEmbed(String url) throws IOExeption {
 
 	}
 }
