@@ -14,13 +14,16 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.text.WordUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jsoup.HttpStatusException;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static bot.modules.Validator.siteValidate;
 
@@ -45,11 +48,11 @@ public class Info {
 			if (validate == Validator.ArgType.EHENTAI) {
 				eh = new EHFetcher(args, handler, database);
 				checker = TagChecker.tagCheck(eh.getTags(), true);
-				embed = EmbedGenerator.getDoujinInfoEmbed(eh);
+				embed = getDoujinInfoEmbed(eh);
 			} else if (validate == Validator.ArgType.NHENTAI) {
 				nh = new NHFetcher(args, database);
 				checker = TagChecker.tagCheck(nh.getTags(), true);
-				embed = EmbedGenerator.getDoujinInfoEmbed(nh);
+				embed = getDoujinInfoEmbed(nh);
 			} else {
 				return;
 			}
@@ -64,12 +67,12 @@ public class Info {
 						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert",
 								"This doujin violates the Discord ToS",
 								"This doujin contained the following illegal tags:\n" +
-										EmbedGenerator.display(checker.getRight()))).queue();
+										display(checker.getRight()))).queue();
 				case HAS_BAD_TAGS -> {
 					EmbedBuilder alter = new EmbedBuilder(EmbedGenerator.createAlertEmbed("Bot Alert",
 							"This doujin has potentially dangerous tags",
 							"This doujin contained the following tags:\n" +
-									EmbedGenerator.display(checker.getRight())));
+									display(checker.getRight())));
 					alter.addField("Continue?", "To continue, press the checkmark.", false);
 
 					SiteFetcher fetcher = switch(validate) {
@@ -96,5 +99,72 @@ public class Info {
 			channel.sendMessage("An error occurred. Please try again, or ping my owner if this persists.").queue();
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Creates an information embed for a doujin, given an nhentai fetcher.
+	 * @param info The NHFetcher object with which to build the embed.
+	 * @return A message embed containing all the information about a doujin.
+	 */
+	public static MessageEmbed getDoujinInfoEmbed(NHFetcher info) throws IOException {
+		EmbedBuilder nhInfo = new EmbedBuilder();
+		nhInfo.setColor(Color.BLACK);
+
+		nhInfo.setAuthor("Doujin Info", null, "https://i.redd.it/fkg9yip5yyl21.png");
+		nhInfo.setTitle(info.getTitle(), info.getUrl());
+		nhInfo.setDescription("by " + WordUtils.capitalize(display(info.getArtists())));
+		nhInfo.setImage(info.getThumbnailUrl());
+
+		nhInfo.addField("Language", info.getLanguage(), true);
+		nhInfo.addField("Japanese Title", info.getTitleJapanese(), true);
+		if (!info.getParodies().isEmpty()) {
+			nhInfo.addField("Parody", display(info.getParodies()), true);
+			if (!info.getChars().isEmpty()) {
+				nhInfo.addField("Characters", display(info.getChars()), true);
+			}
+		}
+		nhInfo.addField("Tags", display(info.getTags()), false);
+
+		nhInfo.setFooter(info.getPages() + " pages | Favorites: " + info.getFavorites() + " | Uploaded:");
+		nhInfo.setTimestamp(info.getTimePosted());
+
+		return nhInfo.build();
+	}
+
+	/**
+	 * Creates an information embed for a doujin, given an ehentai fetcher.
+	 * @param info The EHFetcher object with which to build the embed.
+	 * @return A message embed containing all the information about a doujin.
+	 */
+	public static MessageEmbed getDoujinInfoEmbed(EHFetcher info) {
+		EmbedBuilder ehInfo = new EmbedBuilder();
+		ehInfo.setColor(Color.BLACK);
+
+		ehInfo.setAuthor("Doujin Info", null, "https://cdn.discordapp.com/attachments/607405329206083585/706310427491041390/e-hentaihex.png");
+		ehInfo.setTitle(info.getTitle(), info.getUrl());
+		ehInfo.setDescription("by " + display(info.getArtists()));
+		ehInfo.setImage(info.getThumbnailUrl());
+
+		ehInfo.addField("Language", WordUtils.capitalize(info.getLanguage()), true);
+		ehInfo.addField("Japanese Title", info.getTitleJapanese(), true);
+		if (!info.getParodies().isEmpty()) {
+			ehInfo.addField("Parody", display(info.getParodies()), true);
+			if (!info.getChars().isEmpty()) {
+				ehInfo.addField("Characters", display(info.getChars()), true);
+			}
+		}
+		ehInfo.addField("Category", info.getCategory().toString(), false);
+		ehInfo.addField("Male Tags", display(info.getMaleTags()), true);
+		ehInfo.addField("Female Tags", display(info.getFemaleTags()), true);
+		ehInfo.addField("Misc Tags", display(info.getMiscTags()), true);
+
+		ehInfo.setFooter(info.getPages() + " pages | Rating: " + info.getRating() + " | Uploaded:", null);
+		ehInfo.setTimestamp(info.getTimePosted());
+
+		return ehInfo.build();
+	}
+
+	public static String display(HashSet<String> list) {
+		return list.stream().sorted().collect(Collectors.joining(", "));
 	}
 }

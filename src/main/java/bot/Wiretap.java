@@ -168,9 +168,9 @@ public class Wiretap extends ListenerAdapter {
 				MessageEmbed embed = new EmbedBuilder().build();
 				try {
 					if (cur.getRight() instanceof NHFetcher) {
-						embed = EmbedGenerator.getDoujinInfoEmbed((NHFetcher) cur.getRight());
+						embed = Info.getDoujinInfoEmbed((NHFetcher) cur.getRight());
 					} else if (cur.getRight() instanceof EHFetcher) {
-						embed = EmbedGenerator.getDoujinInfoEmbed((EHFetcher) cur.getRight());
+						embed = Info.getDoujinInfoEmbed((EHFetcher) cur.getRight());
 					} else {
 						// This should never happen
 						return;
