@@ -1,5 +1,6 @@
 package bot;
 
+import bot.commands.BadTags;
 import bot.commands.Help;
 import bot.commands.Info;
 import bot.modules.DBHandler;
@@ -124,6 +125,10 @@ public class Wiretap extends ListenerAdapter {
 				case "info" -> {
 					channel.sendTyping().complete();
 					Info.sendInfo(channel, args, event.getAuthor(), handler, database);
+				}
+				case "badtags", "warningtags" -> {
+					channel.sendTyping().complete();
+					channel.sendMessage(BadTags.getBadTagEmbed()).queue();
 				}
 			}
 		} catch (InsufficientPermissionException e) {
