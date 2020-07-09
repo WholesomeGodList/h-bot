@@ -5,6 +5,7 @@ import java.util.HashSet;
 
 public interface SiteFetcher {
 	String getUrl();
+	String getThumbnailUrl();
 
 	Instant getTimePosted();
 	int getPages();

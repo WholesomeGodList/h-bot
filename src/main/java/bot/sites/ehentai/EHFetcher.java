@@ -7,16 +7,19 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.HttpStatusException;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static bot.sites.ehentai.EHApiHandler.EHApiRequest;
 
@@ -58,9 +61,22 @@ public class EHFetcher implements SiteFetcher {
 	 * @throws IOException If something goes wrong with the fetching, an IOException is thrown.
 	 */
 	public EHFetcher(String url, EHApiHandler handler, @Nullable DBHandler database) throws IOException {
+		logger.info("Connecting to " + url);
 		// Handle URL
 		url = url.trim().replace("http://", "https://");
+		if(!url.endsWith("/")) {
+			url += "/";
+		}
+
 		this.url = url;
+
+		if(database != null) {
+			boolean cached = database.loadFromCache(this);
+			if(cached) {
+				// Found it in the caches (and the data has already been loaded). We can stop here.
+				return;
+			}
+		}
 
 		Pattern galleryPattern = Pattern.compile("https?://e[x\\-]hentai\\.org/g/(\\d+)/([\\da-f]{10})/");
 		Pattern pagePattern = Pattern.compile("https?://e[x\\-]hentai\\.org/s/([\\da-f]{10})/(\\d+)-(\\d+)/");
@@ -72,7 +88,7 @@ public class EHFetcher implements SiteFetcher {
 			galleryId = Integer.parseInt(galleryMatcher.group(1));
 			galleryToken = galleryMatcher.group(2);
 		} else if (pageMatcher.find()){
-			//TODO: Make this also handled in EHApiHandler if the bot gets too large
+			//TODO: Make this also handled in EHApiHandler if the bot gets too large and people really like asking about pages
 			String pageId = pageMatcher.group(1);
 			galleryId = Integer.parseInt(pageMatcher.group(2));
 			int pageNum = Integer.parseInt(pageMatcher.group(3));
@@ -92,11 +108,13 @@ public class EHFetcher implements SiteFetcher {
 			payload.put("pagelist", pageContainer);
 
 			galleryToken = EHApiRequest(payload).getJSONArray("tokenlist").getJSONObject(0).getString("token");
+		} else {
+			throw new HttpStatusException("Invalid URL", 404, url);
 		}
 		CompletableFuture<JSONObject> data = handler.galleryQuery(this);
 		try {
 			JSONObject galleryData = data.get();
-			loadFields(galleryData);
+			loadFields(galleryData, database);
 		} catch (ExecutionException | InterruptedException e) {
 			logger.error("Fetching failed - exception details:");
 			e.printStackTrace();
@@ -136,8 +154,12 @@ public class EHFetcher implements SiteFetcher {
 	private double rating;
 	private Instant timePosted;
 
-	private void loadFields(JSONObject data) {
-		Pattern titleRegex = Pattern.compile("^(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*(?:[^\\[|\\](){}<>]*\\s*\\|\\s*)?([^\\[|\\](){}<>]*?)(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*$");
+	private void loadFields(JSONObject data, @Nullable DBHandler database) {
+		Pattern titleRegex = Pattern.compile(
+				"^(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*" +
+				"(?:[^\\[|\\](){}<>]*\\s*\\|\\s*)?([^\\[|\\](){}<>]*?)" +
+				"(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*$"
+		);
 		Matcher titleMatcher = titleRegex.matcher(data.getString("title"));
 		Matcher japaneseTitleMatcher = titleRegex.matcher(data.getString("title_jpn"));
 
@@ -150,17 +172,18 @@ public class EHFetcher implements SiteFetcher {
 			allTags.add(cur.toString());
 		}
 
-		artists = searchList("artist:(.*)$", allTags);
-		groups = searchList("group:(.*)$", allTags);
-		parodies = searchList("parody:(.*)$", allTags);
-		chars = searchList("character:(.*)$", allTags);
-		language = WordUtils.capitalize(searchList("language:(.*)$", allTags)
+		artists = searchList(Pattern.compile("artist:(.*)$"), allTags).stream()
+				.map(WordUtils::capitalize).collect(Collectors.toCollection(HashSet::new));
+		groups = searchList(Pattern.compile("group:(.*)$"), allTags);
+		parodies = searchList(Pattern.compile("parody:(.*)$"), allTags);
+		chars = searchList(Pattern.compile("character:(.*)$"), allTags);
+		language = WordUtils.capitalize(searchList(Pattern.compile("language:(.*)$"), allTags)
 				.stream().filter((str) -> !(str.contains("translated") || str.contains("rewrite")))
 				.findFirst().orElse(null));
 
-		maleTags = searchList("^male:(.*)$", allTags);
-		femaleTags = searchList("female:(.*)$", allTags);
-		miscTags = searchList("^([^:]*)$", allTags);
+		maleTags = searchList(Pattern.compile("^male:(.*)$"), allTags);
+		femaleTags = searchList(Pattern.compile("female:(.*)$"), allTags);
+		miscTags = searchList(Pattern.compile("^([^:]*)$"), allTags);
 
 		String categoryName = data.getString("category");
 		category = Arrays.stream(Category.values())
@@ -170,20 +193,19 @@ public class EHFetcher implements SiteFetcher {
 		thumbnailUrl = data.getString("thumb");
 		rating = Double.parseDouble(data.getString("rating").trim());
 		timePosted = Instant.ofEpochSecond(Long.parseLong(data.getString("posted").trim()));
+
+		if(database != null) {
+			// Cache the data loaded
+			logger.info("Caching entry...");
+			database.cache(this);
+		}
 	}
 
-	private HashSet<String> searchList(String regex, HashSet<String> list) {
-		HashSet<String> results = new HashSet<>();
-
-		Pattern re = Pattern.compile(regex);
-		for(String cur : list) {
-			Matcher matcher = re.matcher(cur);
-			if(matcher.find()) {
-				results.add(matcher.group(1));
-			}
-		}
-
-		return results;
+	// Simple helper method to search a HashSet for everything that matches a specific regex.
+	private HashSet<String> searchList(Pattern re, HashSet<String> list) {
+		return list.stream().map(re::matcher).filter(Matcher::find)
+				.map(m -> m.group(1)).filter(Objects::nonNull)
+				.collect(Collectors.toCollection(HashSet::new));
 	}
 
 	@Override

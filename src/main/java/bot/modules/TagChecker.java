@@ -1,7 +1,6 @@
 package bot.modules;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashSet;
 
@@ -18,7 +17,7 @@ public class TagChecker {
 	 * @param tags The tags you want to check.
 	 * @return The tags inside tags that were bad.
 	 */
-	public static Pair<TagStatus, HashSet<String>> tagCheck(HashSet<String> tags, boolean includeWarnings) {
+	public static ImmutablePair<TagStatus, HashSet<String>> tagCheck(HashSet<String> tags, boolean includeWarnings) {
 		HashSet<String> badTags = TagList.getBadTags();
 		if(includeWarnings) {
 			badTags.addAll(TagList.getUnwholesomeTags());

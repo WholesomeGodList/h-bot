@@ -6,10 +6,11 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -188,15 +189,18 @@ public class EHApiHandler {
 			return payload;
 		}
 	}
-	private ArrayList<Pair<EHFetcher, CompletableFuture<JSONObject>>> queries;
-	private boolean sleeping;
+	private final ArrayList<Pair<EHFetcher, CompletableFuture<JSONObject>>> queries;
+	private volatile boolean sleeping;
 	private final ThreadPoolExecutor executor;
+	private static final HttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
 
 	private static final Logger logger = LogManager.getLogger(EHApiHandler.class);
 	private static final String API_URL = "https://api.e-hentai.org/api.php";
 
 	public EHApiHandler() {
 		executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+		queries = new ArrayList<>();
+		sleeping = false;
 		logger.info("API handler initialized.");
 	}
 
@@ -206,7 +210,7 @@ public class EHApiHandler {
 	}
 
 	public void runGalleryQuery() {
-		setSleeping(true);
+		logger.info("Now compiling the current gallery queries...");
 		try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
@@ -215,11 +219,15 @@ public class EHApiHandler {
 
 		// Make sure we clean out the relevant parts of queries before setting sleeping to false, to ensure
 		// there are no repeat queries
-		ArrayList<Pair<EHFetcher, CompletableFuture<JSONObject>>> curQueries = new ArrayList<>(queries.subList(0, 25));
-		queries.subList(0, 25).clear();
+
+		int maxSize = Math.min(queries.size(), 25);
+		ArrayList<Pair<EHFetcher, CompletableFuture<JSONObject>>> curQueries = new ArrayList<>(queries.subList(0, maxSize));
+		queries.subList(0, maxSize).clear();
 
 		if(!queries.isEmpty()) {
 			// If there are still queries to be run, run another query afterwards
+			logger.info("There are still queries remaining. Running gallery queries again.");
+			setSleeping(true);
 			executor.submit(
 					this::runGalleryQuery
 			);
@@ -235,15 +243,21 @@ public class EHApiHandler {
 		}
 
 		try {
-			// Get response - might need to reuse the client for performance purposes, but worried about concurrent connections
-			// (look into connection pooling?)
+			// Get response
 			JSONObject response = EHApiRequest(payload.getPayload());
+			//logger.info(response.toString(4));
 
 			JSONArray gmetas = response.getJSONArray("gmetadata");
 
-			for(int i = 0; i < curQueries.size(); i++) {
-				Pair<EHFetcher, CompletableFuture<JSONObject>> cur = curQueries.get(i);
-				cur.getRight().complete(gmetas.getJSONObject(i));
+			for(int i = 0; i < gmetas.length(); i++) {
+				JSONObject curResponse = gmetas.getJSONObject(i);
+				String curGalleryToken = curResponse.getString("token");
+
+				for(Pair<EHFetcher, CompletableFuture<JSONObject>> cur : curQueries) {
+					if(cur.getLeft().getGalleryToken().equals(curGalleryToken)) {
+						cur.getRight().complete(curResponse);
+					}
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -264,22 +278,27 @@ public class EHApiHandler {
 		queries.add(new ImmutablePair<>(data, promise));
 
 		if(!sleeping) {
-			executor.submit(
-					this::runGalleryQuery
-			);
+			setSleeping(true);
+			startGalleryQuery();
 		}
 		return promise;
 	}
 
+	private synchronized void startGalleryQuery() {
+		executor.submit(
+				this::runGalleryQuery
+		);
+	}
+
 	public static JSONObject EHApiRequest(JSONObject payload) throws IOException {
-		try (CloseableHttpClient connect = HttpClients.createDefault()) {
-			return EHApiRequest(payload, connect);
-		}
+		HttpClient connect = HttpClients.custom().setConnectionManager(connManager).build();
+		return EHApiRequest(payload, connect);
 	}
 
 	public static JSONObject EHApiRequest(JSONObject payload, HttpClient connect) throws IOException {
 		logger.info("Sending payload...");
-		logger.info(payload.toString(4));
+		//logger.info(payload.toString(4));
+
 		StringEntity payloadEntity = new StringEntity(payload.toString(), ContentType.APPLICATION_JSON);
 
 		HttpPost post = new HttpPost(API_URL);
@@ -288,6 +307,8 @@ public class EHApiHandler {
 		HttpResponse apiResponse = connect.execute(post);
 
 		HttpEntity entity = apiResponse.getEntity();
+
+		logger.info("Response received. Processing...");
 
 		// Unescape any wacky HTML character sequences (like &#039;)
 		BufferedReader buf = new BufferedReader(new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8));

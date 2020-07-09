@@ -1,0 +1,36 @@
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Gradle CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 14
+      uses: actions/setup-java@v1
+      with:
+        java-version: 14
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: Build with Gradle
+      run: ./gradlew build
+    - name: Run unit tests
+      run: ./gradlew clean test
+    - name: Run shadowJar
+      run: ./gradlew shadowJar
+    - name: Upload jar file as artifact
+      uses: actions/upload-artifact@v1
+      if: success()
+      with:
+        name: hbot.jar
+        path: build/libs/hbotv2-1.0-SNAPSHOT-all.jar

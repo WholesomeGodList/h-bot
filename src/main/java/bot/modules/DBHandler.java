@@ -1,6 +1,7 @@
 package bot.modules;
 
 import bot.sites.ehentai.EHFetcher;
+import bot.sites.nhentai.NHFetcher;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,8 +16,8 @@ public class DBHandler {
 	private final HashMap<String, String> prefixes;
 	private static final Logger logger = LogManager.getLogger(DBHandler.class);
 
-	private static BasicDataSource config = new BasicDataSource();
-	private static BasicDataSource cache = new BasicDataSource();
+	private static final BasicDataSource config = new BasicDataSource();
+	private static final BasicDataSource cache = new BasicDataSource();
 
 	public DBHandler() {
 		prefixes = new HashMap<>();
@@ -74,8 +75,8 @@ public class DBHandler {
 							" gallery_token text, title text, title_japanese text, language text, category text," +
 							"pages integer, uploader text, thumb text, rating real, timeposted integer)");
 
-					create.execute( "CREATE TABLE nhentai (url text, timecached integer, gallery_id integer," +
-							" gallery_token text, title text, title_japanese text, language text, pages integer," +
+					create.execute( "CREATE TABLE nhentai (url text, timecached integer, title text," +
+							"title_japanese text, language text, pages integer," +
 							" thumb text, favorites integer, timeposted integer)");
 
 					// Now create all the small tables
@@ -164,7 +165,7 @@ public class DBHandler {
 
 			if(rs.next()) {
 				// If the entry is older than 14 days...
-				if(rs.getLong("timeposted") < (Instant.now().getEpochSecond() - (86400 * 14))) {
+				if(rs.getLong("timecached") < (Instant.now().getEpochSecond() - (86400 * 14))) {
 					PreparedStatement deleter = cacheconn.prepareStatement("DELETE FROM ehentai WHERE url=?");
 					deleter.setString(1, load.getUrl());
 					deleter.execute();
@@ -178,7 +179,7 @@ public class DBHandler {
 				load.setGalleryToken(rs.getString("gallery_token"));
 
 				load.setTitle(rs.getString("title"));
-				load.setTitle(rs.getString("title_japanese"));
+				load.setTitleJapanese(rs.getString("title_japanese"));
 
 				load.setLanguage(rs.getString("language"));
 				load.setCategoryByName(rs.getString("category"));
@@ -200,7 +201,6 @@ public class DBHandler {
 				load.setMaleTags(loadSet("ehmaletags", url, cacheconn));
 				load.setFemaleTags(loadSet("ehfemaletags", url, cacheconn));
 				load.setMiscTags(loadSet("ehmisctags", url, cacheconn));
-
 				return true;
 			}
 			else {
@@ -208,7 +208,65 @@ public class DBHandler {
 				return false;
 			}
 		} catch (SQLException e) {
-			logger.error("An error occurred during the query.");
+			logger.error("An error occurred during the cache query.");
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	/**
+	 * Looks for a cached version of NHFetcher in the database. If there is one, it is used to populate all the fields
+	 * of the passed NHFetcher object.
+	 *
+	 * If the cached version is too old (older than 2 weeks) it is thrown out and not used.
+	 * @param load An NHFetcher object with which to load the cache into.
+	 * @return Whether this value was found in the cache or not.
+	 */
+	public boolean loadFromCache(NHFetcher load) {
+		try (Connection cacheconn = cache.getConnection()) {
+			PreparedStatement stmt = cacheconn.prepareStatement("SELECT * FROM nhentai WHERE url=?");
+			stmt.setString(1, load.getUrl());
+
+			ResultSet rs = stmt.executeQuery();
+
+			if(rs.next()) {
+				// If the entry is older than 14 days...
+				if(rs.getLong("timecached") < (Instant.now().getEpochSecond() - (86400 * 14))) {
+					PreparedStatement deleter = cacheconn.prepareStatement("DELETE FROM nhentai WHERE url=?");
+					deleter.setString(1, load.getUrl());
+					deleter.execute();
+
+					deleter.close();
+					return false;
+				}
+
+				// We're good. Start processing.
+				load.setTitle(rs.getString("title"));
+				load.setTitleJapanese(rs.getString("title_japanese"));
+				load.setLanguage(rs.getString("language"));
+
+				load.setPages(rs.getInt("pages"));
+				load.setThumbnailUrl(rs.getString("thumb"));
+				load.setFavorites(rs.getInt("favorites"));
+				load.setTimePosted(Instant.ofEpochSecond(rs.getLong("timeposted")));
+
+				String url = load.getUrl();
+
+				// Load in all the HashSets
+
+				load.setArtists(loadSet("nhartists", url, cacheconn));
+				load.setGroups(loadSet("nhgroups", url, cacheconn));
+				load.setParodies(loadSet("nhparodies", url, cacheconn));
+				load.setChars(loadSet("nhchars", url, cacheconn));
+				load.setTags(loadSet("nhtags", url, cacheconn));
+				return true;
+			}
+			else {
+				// It's not in the cache.
+				return false;
+			}
+		} catch (SQLException e) {
+			logger.error("An error occurred during the cache query.");
 			e.printStackTrace();
 			return false;
 		}
@@ -219,7 +277,75 @@ public class DBHandler {
 	 * @param data The EHFetcher with data to be cached.
 	 */
 	public void cache(EHFetcher data) {
-		Instant.now().getEpochSecond();
+		try (Connection cacheconn = cache.getConnection()) {
+			PreparedStatement stmt = cacheconn.prepareStatement("INSERT INTO ehentai VALUES " +
+					"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			stmt.setString(1, data.getUrl());
+			stmt.setLong(2, Instant.now().getEpochSecond());
+			stmt.setInt(3, data.getGalleryId());
+			stmt.setString(4, data.getGalleryToken());
+			stmt.setString(5, data.getTitle());
+			stmt.setString(6, data.getTitleJapanese());
+			stmt.setString(7, data.getLanguage());
+			stmt.setString(8, data.getCategory().toString());
+			stmt.setInt(9, data.getPages());
+			stmt.setString(10, data.getUploader());
+			stmt.setString(11, data.getThumbnailUrl());
+			stmt.setDouble(12, data.getRating());
+			stmt.setLong(13, data.getTimePosted().getEpochSecond());
+
+			stmt.execute(); //jesus christ
+			
+			String url = data.getUrl();
+
+			insertSet(data.getArtists(),"ehartists", url, cacheconn);
+			insertSet(data.getGroups(),"ehgroups", url, cacheconn);
+			insertSet(data.getParodies(),"ehparodies", url, cacheconn);
+			insertSet(data.getChars(),"ehchars", url, cacheconn);
+			insertSet(data.getMaleTags(),"ehmaletags", url, cacheconn);
+			insertSet(data.getFemaleTags(),"ehfemaletags", url, cacheconn);
+			insertSet(data.getMiscTags(),"ehmisctags", url, cacheconn);
+
+			logger.info("Caching completed.");
+		} catch (SQLException e) {
+			logger.error("An error occurred during the cache insertion.");
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Caches the data currently inside this NHFetcher.
+	 * @param data The NHFetcher with data to be cached.
+	 */
+	public void cache(NHFetcher data) {
+		try (Connection cacheconn = cache.getConnection()) {
+			PreparedStatement stmt = cacheconn.prepareStatement("INSERT INTO nhentai VALUES " +
+					"(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			stmt.setString(1, data.getUrl());
+			stmt.setLong(2, Instant.now().getEpochSecond());
+			stmt.setString(3, data.getTitle());
+			stmt.setString(4, data.getTitleJapanese());
+			stmt.setString(5, data.getLanguage());
+			stmt.setInt(6, data.getPages());
+			stmt.setString(7, data.getThumbnailUrl());
+			stmt.setInt(8, data.getFavorites());
+			stmt.setLong(9, data.getTimePosted().getEpochSecond());
+
+			stmt.execute(); //jesus christ v2
+
+			String url = data.getUrl();
+
+			insertSet(data.getArtists(),"nhartists", url, cacheconn);
+			insertSet(data.getGroups(),"nhgroups", url, cacheconn);
+			insertSet(data.getParodies(),"nhparodies", url, cacheconn);
+			insertSet(data.getChars(),"nhchars", url, cacheconn);
+			insertSet(data.getTags(),"nhtags", url, cacheconn);
+
+			logger.info("Caching completed.");
+		} catch (SQLException e) {
+			logger.error("An error occurred during the cache insertion.");
+			e.printStackTrace();
+		}
 	}
 
 	// Simple helper to load a HashSet from a table.
@@ -235,5 +361,18 @@ public class DBHandler {
 		}
 		stmt.close();
 		return results;
+	}
+
+	// Simple helper to insert a HashSet into a table.
+	private void insertSet(HashSet<String> tags, String tableName, String url, Connection conn) throws SQLException {
+		PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + tableName + " VALUES (?, ?)");
+		for(String curTag : tags) {
+			stmt.setString(1, url);
+			stmt.setString(2, curTag);
+			stmt.addBatch();
+		}
+
+		stmt.executeBatch();
+		stmt.close();
 	}
 }

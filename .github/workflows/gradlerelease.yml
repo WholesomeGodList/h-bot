@@ -1,0 +1,70 @@
+# This workflow will deploy a JAR artifact along with the regular build.
+
+name: Gradle CI w/ Release
+
+on:
+  create:
+    tags:
+      - v*
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 14
+        uses: actions/setup-java@v1
+        with:
+          java-version: 14
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew build
+      - name: Run unit tests
+        run: ./gradlew clean test
+      - name: Run shadowJar
+        run: ./gradlew shadowJar
+      - name: Upload jar file as artifact
+        uses: actions/upload-artifact@v1
+        if: success()
+        with:
+          name: hbot.jar
+          path: build/libs/hbotv2-1.0-SNAPSHOT-all.jar
+
+  release:
+
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Pull artifact from build
+        uses: actions/download-artifact@v1
+        with:
+          name: hbot.jar
+          path: ./
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Automated release version ${{ github.ref }} of H-Bot. Refer to the readme for usage instructions.
+            Please open an issue for any bugs.
+          draft: false
+          prerelease: false
+      - name: Upload release asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: hbotv2-1.0-SNAPSHOT-all.jar
+          asset_name: hbot.jar
+          asset_content_type: application/java-archive
