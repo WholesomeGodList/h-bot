@@ -11,6 +11,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -190,24 +192,40 @@ public class EHApiHandler {
 	private boolean sleeping;
 	private final ThreadPoolExecutor executor;
 
+	private static final Logger logger = LogManager.getLogger(EHApiHandler.class);
 	private static final String API_URL = "https://api.e-hentai.org/api.php";
 
 	public EHApiHandler() {
 		executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+		logger.info("API handler initialized.");
 	}
 
-	//TODO: If the bot ever gets too large, handle query sizes larger than 25
+	// Simple mutex to ensure sleeping never gets modified twice at the same time
+	private synchronized void setSleeping(boolean status) {
+		sleeping = status;
+	}
+
 	public void runGalleryQuery() {
-		sleeping = true;
+		setSleeping(true);
 		try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 
+		// Make sure we clean out the relevant parts of queries before setting sleeping to false, to ensure
+		// there are no repeat queries
 		ArrayList<Pair<EHFetcher, CompletableFuture<JSONObject>>> curQueries = new ArrayList<>(queries.subList(0, 25));
 		queries.subList(0, 25).clear();
-		sleeping = false;
+
+		if(!queries.isEmpty()) {
+			// If there are still queries to be run, run another query afterwards
+			executor.submit(
+					this::runGalleryQuery
+			);
+		}
+
+		setSleeping(false);
 
 		EHGalleryPayload payload = new EHGalleryPayload();
 
@@ -236,6 +254,11 @@ public class EHApiHandler {
 		}
 	}
 
+	/**
+	 * Submits a query to the E-Hentai API for information about a doujin.
+	 * @param data An EHFetcher containing a Gallery ID and Gallery Token (that will be used to submit the query).
+	 * @return A CompletableFuture object that will resolve with the data from E-Hentai.
+	 */
 	public CompletableFuture<JSONObject> galleryQuery(EHFetcher data) {
 		CompletableFuture<JSONObject> promise = new CompletableFuture<>();
 		queries.add(new ImmutablePair<>(data, promise));
@@ -255,6 +278,8 @@ public class EHApiHandler {
 	}
 
 	public static JSONObject EHApiRequest(JSONObject payload, HttpClient connect) throws IOException {
+		logger.info("Sending payload...");
+		logger.info(payload.toString(4));
 		StringEntity payloadEntity = new StringEntity(payload.toString(), ContentType.APPLICATION_JSON);
 
 		HttpPost post = new HttpPost(API_URL);

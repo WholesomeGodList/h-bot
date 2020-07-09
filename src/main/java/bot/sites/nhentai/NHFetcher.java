@@ -1,4 +1,7 @@
 package bot.sites.nhentai;
 
-public class NHFetcher {
+import bot.sites.SiteFetcher;
+
+public class NHFetcher implements SiteFetcher {
+	
 }
