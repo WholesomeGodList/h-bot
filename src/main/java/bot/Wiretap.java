@@ -1,27 +1,38 @@
 package bot;
 
 import bot.commands.Help;
+import bot.commands.Info;
 import bot.modules.DBHandler;
 import bot.modules.EmbedGenerator;
 import bot.modules.Validator;
+import bot.sites.SiteFetcher;
+import bot.sites.ehentai.EHApiHandler;
+import bot.sites.ehentai.EHFetcher;
+import bot.sites.nhentai.NHFetcher;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jsoup.HttpStatusException;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Wiretap extends ListenerAdapter {
 	private static final Logger logger = LogManager.getLogger(Wiretap.class);
-	private static HashMap<String, String> suspects;
+	private static HashMap<String, ImmutablePair<String, SiteFetcher>> suspects;
 	private final DBHandler database;
+	private final EHApiHandler handler;
 
 	/**
 	 * Creates a Wiretap listener to listen to messages.
@@ -29,10 +40,12 @@ public class Wiretap extends ListenerAdapter {
 	 */
 	public Wiretap() {
 		database = new DBHandler();
+		handler = new EHApiHandler();
+		suspects = new HashMap<>();
 	}
 
-	public static void registerSuspect(String messageId, String authorId) {
-		suspects.put(messageId, authorId);
+	public static void registerSuspect(String messageId, String authorId, SiteFetcher fetcher) {
+		suspects.put(messageId, new ImmutablePair<>(authorId, fetcher));
 	}
 
 	@Override
@@ -110,7 +123,7 @@ public class Wiretap extends ListenerAdapter {
 				}
 				case "info" -> {
 					channel.sendTyping().complete();
-
+					Info.sendInfo(channel, args, event.getAuthor(), handler, database);
 				}
 			}
 		} catch (InsufficientPermissionException e) {
@@ -137,13 +150,46 @@ public class Wiretap extends ListenerAdapter {
 			return;
 		}
 
-		String authorId = suspects.get(event.getMessageId());
+		MessageChannel channel = event.getChannel();
+
+		ImmutablePair<String, SiteFetcher> cur = suspects.get(event.getMessageId());
+		String authorId = cur.getLeft();
+
 		if (event.getUserId().equals(authorId)) {
 			// Let's check the reaction...
 			String reaction = event.getReaction().getReactionEmote().getAsCodepoints();
+
 			if (reaction.equals("U+2705")) {
 				// Checkmark
-				return;
+				logger.info("Checkmark reaction detected. Sending info embed...");
+				channel.deleteMessageById(messageId).queue();
+				channel.sendTyping().complete();
+
+				MessageEmbed embed = new EmbedBuilder().build();
+				try {
+					if (cur.getRight() instanceof NHFetcher) {
+						embed = EmbedGenerator.getDoujinInfoEmbed((NHFetcher) cur.getRight());
+					} else if (cur.getRight() instanceof EHFetcher) {
+						embed = EmbedGenerator.getDoujinInfoEmbed((EHFetcher) cur.getRight());
+					} else {
+						// This should never happen
+						return;
+					}
+				} catch (HttpStatusException e) {
+					channel.sendMessage("Can't find page: returned error code " + e.getStatusCode()).queue();
+				} catch (IOException e) {
+					channel.sendMessage("An error occurred. Please try again, or ping my owner if this persists.").queue();
+					e.printStackTrace();
+				}
+
+				channel.sendMessage(embed).queue();
+			} else if (reaction.equals("U+274C")) {
+				// X
+				logger.info("X reaction detected. Closing...");
+				channel.deleteMessageById(messageId).queue();
+			} else {
+				// Not a valid reaction. Yeet it.
+				event.getReaction().removeReaction().queue();
 			}
 		} else {
 			// Wrong dude. Yeet the reaction into the sun.

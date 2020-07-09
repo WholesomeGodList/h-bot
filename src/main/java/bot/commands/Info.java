@@ -5,6 +5,7 @@ import bot.modules.DBHandler;
 import bot.modules.EmbedGenerator;
 import bot.modules.TagChecker;
 import bot.modules.Validator;
+import bot.sites.SiteFetcher;
 import bot.sites.ehentai.EHApiHandler;
 import bot.sites.ehentai.EHFetcher;
 import bot.sites.nhentai.NHFetcher;
@@ -38,12 +39,15 @@ public class Info {
 			ImmutablePair<TagChecker.TagStatus, HashSet<String>> checker;
 			MessageEmbed embed;
 
+			EHFetcher eh = null;
+			NHFetcher nh = null;
+
 			if (validate == Validator.ArgType.EHENTAI) {
-				EHFetcher eh = new EHFetcher(args, handler, database);
+				eh = new EHFetcher(args, handler, database);
 				checker = TagChecker.tagCheck(eh.getTags(), true);
 				embed = EmbedGenerator.getDoujinInfoEmbed(eh);
 			} else if (validate == Validator.ArgType.NHENTAI) {
-				NHFetcher nh = new NHFetcher(args, database);
+				nh = new NHFetcher(args, database);
 				checker = TagChecker.tagCheck(nh.getTags(), true);
 				embed = EmbedGenerator.getDoujinInfoEmbed(nh);
 			} else {
@@ -68,11 +72,20 @@ public class Info {
 									EmbedGenerator.display(checker.getRight())));
 					alter.addField("Continue?", "To continue, press the checkmark.", false);
 
+					SiteFetcher fetcher = switch(validate) {
+						case EHENTAI:
+							yield eh;
+						case NHENTAI:
+							yield nh;
+						default:
+							yield null;
+					};
+
 					channel.sendMessage(alter.build()).queue(
 							success -> {
 								success.addReaction("U+2705").queue();
 								success.addReaction("U+274C").queue();
-								Wiretap.registerSuspect(success.getId(), success.getAuthor().getId());
+								Wiretap.registerSuspect(success.getId(), success.getAuthor().getId(), fetcher);
 							}
 					);
 				}
