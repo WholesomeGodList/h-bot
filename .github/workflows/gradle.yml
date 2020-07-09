@@ -33,4 +33,4 @@ jobs:
       if: success()
       with:
         name: hbot.jar
-        path: build/libs/hbotv2-1.0-SNAPSHOT-all.jar
+        path: build/libs/hbotv3-1.0-SNAPSHOT-all.jar

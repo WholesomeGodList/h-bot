@@ -31,7 +31,7 @@ jobs:
         if: success()
         with:
           name: hbot.jar
-          path: build/libs/hbotv2-1.0-SNAPSHOT-all.jar
+          path: build/libs/hbotv3-1.0-SNAPSHOT-all.jar
 
   release:
 
@@ -65,6 +65,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: hbotv2-1.0-SNAPSHOT-all.jar
+          asset_path: hbotv3-1.0-SNAPSHOT-all.jar
           asset_name: hbot.jar
           asset_content_type: application/java-archive
