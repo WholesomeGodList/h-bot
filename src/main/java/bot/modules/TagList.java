@@ -37,7 +37,7 @@ public class TagList {
 	/**
 	 * The highest severity of tags.
 	 * A doujin having any of these tags forbids the bot from saying anything about it.
-	 * These tags most likely violate the Discord ToS.
+	 * These tags probably violate the Discord ToS.
 	 */
 	private static final HashSet<String> illegalTags = new HashSet<>(
 			Arrays.asList(
