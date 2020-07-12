@@ -9,8 +9,9 @@ import bot.modules.Validator;
 import bot.sites.SiteFetcher;
 import bot.sites.ehentai.EHApiHandler;
 import bot.sites.ehentai.EHFetcher;
+import bot.sites.ehentai.EHSearch;
 import bot.sites.nhentai.NHFetcher;
-import net.dv8tion.jda.api.EmbedBuilder;
+import bot.sites.nhentai.NHSearch;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -22,9 +23,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jsoup.HttpStatusException;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -115,20 +114,42 @@ public class Wiretap extends ListenerAdapter {
 		try {
 			switch (command) {
 				case "help" -> {
-					channel.sendTyping().complete();
+					channel.sendTyping().queue();
 					channel.sendMessage(Help.getHelpEmbed()).queue();
 				}
 				case "botinfo" -> {
-					channel.sendTyping().complete();
+					channel.sendTyping().queue();
 					channel.sendMessage(Help.getInfoEmbed()).queue();
 				}
 				case "info" -> {
-					channel.sendTyping().complete();
+					channel.sendTyping().queue();
 					Info.sendInfo(channel, args, event.getAuthor(), handler, database);
 				}
 				case "badtags", "warningtags" -> {
-					channel.sendTyping().complete();
+					channel.sendTyping().queue();
 					channel.sendMessage(BadTags.getBadTagEmbed()).queue();
+				}
+				case "searcheh", "deepsearcheh" -> {
+					channel.sendTyping().queue();
+
+					boolean restrict = true;
+					if(args.startsWith("-n ")) {
+						args = args.substring(3);
+						restrict = false;
+					}
+
+					EHSearch.runSearch(channel, event.getAuthor(), args, restrict, command.equals("searcheh") ? 4 : 10, handler, database);
+				}
+				case "search", "deepsearch" -> {
+					channel.sendTyping().queue();
+
+					boolean restrict = true;
+					if(args.startsWith("-n ")) {
+						args = args.substring(3);
+						restrict = false;
+					}
+
+					NHSearch.runSearch(channel, event.getAuthor(), args, restrict, command.equals("search") ? 4 : 10, database);
 				}
 			}
 		} catch (InsufficientPermissionException e) {
@@ -168,30 +189,26 @@ public class Wiretap extends ListenerAdapter {
 				// Checkmark
 				logger.info("Checkmark reaction detected. Sending info embed...");
 				channel.deleteMessageById(messageId).queue();
-				channel.sendTyping().complete();
+				channel.sendTyping().queue();
 
-				MessageEmbed embed = new EmbedBuilder().build();
-				try {
-					if (cur.getRight() instanceof NHFetcher) {
-						embed = Info.getDoujinInfoEmbed((NHFetcher) cur.getRight());
-					} else if (cur.getRight() instanceof EHFetcher) {
-						embed = Info.getDoujinInfoEmbed((EHFetcher) cur.getRight());
-					} else {
-						// This should never happen
-						return;
-					}
-				} catch (HttpStatusException e) {
-					channel.sendMessage("Can't find page: returned error code " + e.getStatusCode()).queue();
-				} catch (IOException e) {
-					channel.sendMessage("An error occurred. Please try again, or ping my owner if this persists.").queue();
-					e.printStackTrace();
+				MessageEmbed embed;
+				if (cur.getRight() instanceof NHFetcher) {
+					embed = Info.getDoujinInfoEmbed((NHFetcher) cur.getRight());
+				} else if (cur.getRight() instanceof EHFetcher) {
+					embed = Info.getDoujinInfoEmbed((EHFetcher) cur.getRight());
+				} else {
+					// This should never happen
+					logger.error("Something impossible happened.");
+					return;
 				}
 
 				channel.sendMessage(embed).queue();
+				suspects.remove(messageId);
 			} else if (reaction.equals("U+274C")) {
 				// X
 				logger.info("X reaction detected. Closing...");
 				channel.deleteMessageById(messageId).queue();
+				suspects.remove(messageId);
 			} else {
 				// Not a valid reaction. Yeet it.
 				event.getReaction().removeReaction().queue();

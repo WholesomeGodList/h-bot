@@ -31,57 +31,64 @@ public class EHSearch {
 
 	public static void runSearch(MessageChannel channel, User author, String query, boolean restrict, int pages, EHApiHandler handler, DBHandler database) {
 		// Query preprocessing
-		Pattern gallery = Pattern.compile("https?://e[x\\-]hentai\\.org/g/(\\d+)/([\\da-f]{10})/");
 		query = query.trim();
 		String urlQuery = generateUrl(query);
 
-		ArrayList<ImmutablePair<String, CompletableFuture<EHFetcher>>> queries = new ArrayList<>();
+		final String fquery = query;
+
+		Pattern gallery = Pattern.compile("https?://e[x\\-]hentai\\.org/g/(\\d+)/([\\da-f]{10})/");
+
+		ArrayList<ImmutablePair<String, CompletableFuture<EHFetcher>>> allQueries = new ArrayList<>();
 
 		for (int currentPage = 0; currentPage < pages; currentPage++) {
 			try {
+				ArrayList<ImmutablePair<String, CompletableFuture<EHFetcher>>> queries = new ArrayList<>();
+
 				String curUrlQuery = urlQuery + currentPage; // yes, E-Hentai's pages are zero indexed
 				logger.info("Current page: " + (currentPage + 1));
 				logger.info("Query: " + curUrlQuery);
 
 				Document doc = Jsoup.connect(curUrlQuery).get();
 
-				int querySize = queries.size();
-
 				doc.select("a[href]").stream().map(e -> e.attr("abs:href"))
 						.filter(gallery.asMatchPredicate())
 						.forEachOrdered(str -> queries.add(new ImmutablePair<>(str, new CompletableFuture<>())));
 
-				// If no new results were added, we can stop here
-				if(querySize == queries.size()) {
+				// If no new results were found, we stop here
+				if(queries.isEmpty()) {
 					break;
 				}
+
+				// Submit all promises for resolution simultaneously (using EHApiHandler)
+				for (ImmutablePair<String, CompletableFuture<EHFetcher>> curPair : queries) {
+					CompletableFuture<EHFetcher> curPromise = curPair.getRight();
+					String curUrl = curPair.getLeft();
+
+					executor.submit(
+							() -> {
+								try {
+									curPromise.complete(new EHFetcher(curUrl, handler, database));
+								} catch (IOException e) {
+									curPromise.completeExceptionally(e);
+								}
+							});
+				}
+
+				allQueries.addAll(queries);
+
+				Thread.sleep(100);
 			} catch (HttpStatusException e) {
 				logger.info("Error: HTTP status " + e.getStatusCode());
-			} catch (IOException e) {
+			} catch (IOException | InterruptedException e) {
 				logger.info("Exception occured in search. Query: " + urlQuery);
 				e.printStackTrace();
 			}
 		}
 
-		// Submit all promises for resolution simultaneously (using EHApiHandler)
-		for (ImmutablePair<String, CompletableFuture<EHFetcher>> curPair : queries) {
-			CompletableFuture<EHFetcher> curPromise = curPair.getRight();
-			String curUrl = curPair.getLeft();
-
-			executor.submit(
-					() -> {
-						try {
-							curPromise.complete(new EHFetcher(curUrl, handler, database));
-						} catch (IOException e) {
-							curPromise.completeExceptionally(e);
-						}
-					});
-		}
-
 		// Find all the successful promises (filtering out anything that threw an exception), filter out anything with bad tags, and return them
-		ArrayList<EHFetcher> fetchers = queries.stream().map(ImmutablePair::getRight)
+		ArrayList<EHFetcher> fetchers = allQueries.stream().map(ImmutablePair::getRight)
 				.map(EHSearch::joinWithoutExceptions).filter(Objects::nonNull)
-				.filter(fetcher -> TagChecker.tagCheck(fetcher.getTags(), restrict).getLeft() == TagChecker.TagStatus.OK)
+				.filter(fetcher -> TagChecker.tagCheck(fetcher.getTags(), restrict, fquery).getLeft() == TagChecker.TagStatus.OK)
 				.collect(Collectors.toCollection(ArrayList::new));
 
 		// At this point, fetchers is our final search results. Start returning the results.
@@ -102,7 +109,7 @@ public class EHSearch {
 		else {
 			// Big link pile, send it in DMs
 			if(channel.getType() == ChannelType.TEXT) {
-				channel.sendMessage(EmbedGenerator.createAlertEmbed("Search", "More than 10 results - sending the results to your DMs!")).complete();
+				channel.sendMessage(EmbedGenerator.createAlertEmbed("Search Results", "More than 10 results - sending the results to your DMs!")).complete();
 				author.openPrivateChannel().queue(
 						pm -> {
 							pm.sendMessage(EmbedGenerator.createAlertEmbed("Search Results", "Results found: " + fetchers.size())).queue();

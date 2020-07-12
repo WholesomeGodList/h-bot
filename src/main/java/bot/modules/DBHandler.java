@@ -46,6 +46,7 @@ public class DBHandler {
 			config.setUrl("jdbc:sqlite:config.db");
 			config.setMinIdle(2);
 			config.setMaxIdle(5);
+			config.setMaxTotal(15);
 
 			Connection conn = config.getConnection();
 			if(conn != null) {
@@ -102,6 +103,7 @@ public class DBHandler {
 			cache.setUrl("jdbc:sqlite:cache.db");
 			cache.setMinIdle(2);
 			cache.setMaxIdle(5);
+			cache.setMaxTotal(30);
 
 			Connection conn = cache.getConnection();
 			if (conn != null) {

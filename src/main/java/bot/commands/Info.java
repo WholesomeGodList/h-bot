@@ -5,6 +5,7 @@ import bot.modules.DBHandler;
 import bot.modules.EmbedGenerator;
 import bot.modules.TagChecker;
 import bot.modules.Validator;
+import bot.sites.NotFoundException;
 import bot.sites.SiteFetcher;
 import bot.sites.ehentai.EHApiHandler;
 import bot.sites.ehentai.EHFetcher;
@@ -57,25 +58,30 @@ public class Info {
 				return;
 			}
 
-			switch(checker.getLeft()) {
+			switch (checker.getLeft()) {
 				case OK -> {
+					logger.info("No problems found. Sending info embed...");
 					// It's good. Send the embed.
 					channel.sendTyping().complete();
 					channel.sendMessage(embed).queue();
 				}
-				case ILLEGAL -> // It's not legal. Send another embed.
-						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert",
-								"This doujin violates the Discord ToS",
-								"This doujin contained the following illegal tags:\n" +
-										display(checker.getRight()))).queue();
+				case ILLEGAL -> {// It's not legal. Send another embed.
+					logger.info("It's not legal.");
+					channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert",
+							"This doujin violates the Discord ToS",
+							"This doujin contained the following illegal tags:\n" +
+									display(checker.getRight()))).queue();
+				}
 				case HAS_BAD_TAGS -> {
+					logger.info("Problems found. Sending warning embed...");
+
 					EmbedBuilder alter = new EmbedBuilder(EmbedGenerator.createAlertEmbed("Bot Alert",
 							"This doujin has potentially dangerous tags",
 							"This doujin contained the following tags:\n" +
 									display(checker.getRight())));
 					alter.addField("Continue?", "To continue, press the checkmark.", false);
 
-					SiteFetcher fetcher = switch(validate) {
+					SiteFetcher fetcher = switch (validate) {
 						case EHENTAI:
 							yield eh;
 						case NHENTAI:
@@ -93,6 +99,8 @@ public class Info {
 					);
 				}
 			}
+		} catch (NotFoundException e) {
+			channel.sendMessage("Something went wrong. Error message: " + (e.getMessage().isEmpty() ? "None" : e.getMessage())).queue();
 		} catch (HttpStatusException e) {
 			channel.sendMessage("Can't find page: returned error code " + e.getStatusCode()).queue();
 		} catch (IOException e) {
@@ -106,7 +114,7 @@ public class Info {
 	 * @param info The NHFetcher object with which to build the embed.
 	 * @return A message embed containing all the information about a doujin.
 	 */
-	public static MessageEmbed getDoujinInfoEmbed(NHFetcher info) throws IOException {
+	public static MessageEmbed getDoujinInfoEmbed(NHFetcher info) {
 		EmbedBuilder nhInfo = new EmbedBuilder();
 		nhInfo.setColor(Color.BLACK);
 
