@@ -19,21 +19,25 @@ public class DBHandler {
 	private static final BasicDataSource config = new BasicDataSource();
 	private static final BasicDataSource cache = new BasicDataSource();
 
+	/**
+	 * Creates and sets up a local SQL server if it doesn't exist already. It will also initialize all necessary connections.
+	 */
 	public DBHandler() {
 		prefixes = new HashMap<>();
-		Connection connfig;
+		Connection connectionConfig;
 
+		//Creating database for command configs for each server
 		File configFile = new File("./config.db");
 		String configUrl = "jdbc:sqlite:config.db";
 		if(!configFile.exists()) {
 			logger.info("Config database not found. Creating a new database...");
 			try {
-				connfig = DriverManager.getConnection(configUrl);
-				if(connfig != null) {
+				connectionConfig = DriverManager.getConnection(configUrl);
+				if(connectionConfig != null) {
 					logger.info("Config database created.");
 					logger.info("Now running setup commands...");
 
-					Statement create = connfig.createStatement();
+					Statement create = connectionConfig.createStatement();
 
 					create.execute("CREATE TABLE prefixes (guild_id INTEGER PRIMARY KEY, prefix text)");
 					create.execute(" CREATE TABLE hookchannels (guild_id INTEGER PRIMARY KEY, channel_id INTEGER);");
@@ -42,7 +46,9 @@ public class DBHandler {
 				logger.error("Config database creation failed. Error details:");
 				logger.error(e.getStackTrace());
 			}
-		} else try {
+		}
+		try {
+			//Initializing connections pool
 			config.setUrl("jdbc:sqlite:config.db");
 			config.setMinIdle(2);
 			config.setMaxIdle(5);
@@ -58,18 +64,19 @@ public class DBHandler {
 			logger.error(e.getStackTrace());
 		}
 
-		Connection cacheconn;
+		Connection cacheConn;
 
+		//Creating database for caching website data.
 		File cacheFile = new File("./cache.db");
 		String cacheUrl = "jdbc:sqlite:cache.db";
 		if(!cacheFile.exists()) {
 			logger.info("Config database not found. Creating a new database...");
 			try {
-				cacheconn = DriverManager.getConnection(cacheUrl);
-				if(cacheconn != null) {
+				cacheConn = DriverManager.getConnection(cacheUrl);
+				if(cacheConn != null) {
 					logger.info("Cache database created.");
 					logger.info("Now running setup commands...");
-					Statement create = cacheconn.createStatement();
+					Statement create = cacheConn.createStatement();
 
 					// Create main tables
 					create.execute("CREATE TABLE ehentai (url text, timecached integer, gallery_id integer," +
@@ -99,7 +106,9 @@ public class DBHandler {
 				logger.error("Config database creation failed. Error details:");
 				logger.error(e.getStackTrace());
 			}
-		} else try {
+		}
+		try {
+			//Initializing connections pool
 			cache.setUrl("jdbc:sqlite:cache.db");
 			cache.setMinIdle(2);
 			cache.setMaxIdle(5);
@@ -110,7 +119,8 @@ public class DBHandler {
 				logger.info("Connected to cache database.");
 				conn.close();
 			}
-		} catch (SQLException e) {
+
+		} catch (SQLException e) { //fuck
 			logger.error("Config database connection failed. Error details:");
 			logger.error(e.getStackTrace());
 		}
@@ -118,7 +128,7 @@ public class DBHandler {
 
 	/**
 	 * Gets the prefix for a guild.
-	 * Internally caches prefixes in memory to prevent SQL queries.
+	 * Internally caches prefixes in memory to prevent excessive SQL queries.
 	 * @param guildId The ID of the guild to which the get the prefix of.
 	 * @return The prefix of the guild.
 	 */
@@ -129,7 +139,10 @@ public class DBHandler {
 			prefix = prefixes.get(guildId);
 		} else {
 			try (Connection connfig = config.getConnection()) {
+				//Create connection and fetch if internal cache doesn't have it
+
 				PreparedStatement stmt = connfig.prepareStatement("SELECT prefix FROM prefixes WHERE guild_id=?");
+				//fuck you bobby
 				stmt.setLong(1, Long.parseLong(guildId));
 				ResultSet rs = stmt.executeQuery();
 				if (rs.next()) {
@@ -159,20 +172,26 @@ public class DBHandler {
 	 * @return Whether this value was found in the cache or not.
 	 */
 	public boolean loadFromCache(EHFetcher load) {
-		try (Connection cacheconn = cache.getConnection()) {
-			PreparedStatement stmt = cacheconn.prepareStatement("SELECT * FROM ehentai WHERE url=?");
-			stmt.setString(1, load.getUrl());
+		try (Connection cacheConn = cache.getConnection()) {
+			PreparedStatement guillotine = cacheConn.prepareStatement("SELECT * FROM ehentai WHERE url=?");
+			guillotine.setString(1, load.getUrl());
 
-			ResultSet rs = stmt.executeQuery();
+			ResultSet rs = guillotine.executeQuery();
+			//execute the nobles
 
 			if(rs.next()) {
 				// If the entry is older than 14 days...
 				if(rs.getLong("timecached") < (Instant.now().getEpochSecond() - (86400 * 14))) {
-					PreparedStatement deleter = cacheconn.prepareStatement("DELETE FROM ehentai WHERE url=?");
-					deleter.setString(1, load.getUrl());
-					deleter.execute();
 
-					deleter.close();
+					PreparedStatement coronavirus = cacheConn.prepareStatement("DELETE FROM ehentai WHERE url=?");
+					//Execute the old queries!
+
+					coronavirus.setString(1, load.getUrl());
+					coronavirus.execute();
+
+					coronavirus.close();
+					//i wish we could do this too
+
 					return false;
 				}
 
@@ -196,13 +215,13 @@ public class DBHandler {
 
 				// Load in all the HashSets
 
-				load.setArtists(loadSet("ehartists", url, cacheconn));
-				load.setGroups(loadSet("ehgroups", url, cacheconn));
-				load.setParodies(loadSet("ehparodies", url, cacheconn));
-				load.setChars(loadSet("ehchars", url, cacheconn));
-				load.setMaleTags(loadSet("ehmaletags", url, cacheconn));
-				load.setFemaleTags(loadSet("ehfemaletags", url, cacheconn));
-				load.setMiscTags(loadSet("ehmisctags", url, cacheconn));
+				load.setArtists(loadSetFromTable("ehartists", url, cacheConn));
+				load.setGroups(loadSetFromTable("ehgroups", url, cacheConn));
+				load.setParodies(loadSetFromTable("ehparodies", url, cacheConn));
+				load.setChars(loadSetFromTable("ehchars", url, cacheConn));
+				load.setMaleTags(loadSetFromTable("ehmaletags", url, cacheConn));
+				load.setFemaleTags(loadSetFromTable("ehfemaletags", url, cacheConn));
+				load.setMiscTags(loadSetFromTable("ehmisctags", url, cacheConn));
 				return true;
 			}
 			else {
@@ -225,20 +244,23 @@ public class DBHandler {
 	 * @return Whether this value was found in the cache or not.
 	 */
 	public boolean loadFromCache(NHFetcher load) {
-		try (Connection cacheconn = cache.getConnection()) {
-			PreparedStatement stmt = cacheconn.prepareStatement("SELECT * FROM nhentai WHERE url=?");
-			stmt.setString(1, load.getUrl());
+		try (Connection cacheConn = cache.getConnection()) {
+			PreparedStatement guillotine = cacheConn.prepareStatement("SELECT * FROM nhentai WHERE url=?");
+			guillotine.setString(1, load.getUrl());
 
-			ResultSet rs = stmt.executeQuery();
+			ResultSet rs = guillotine.executeQuery();
+			//execute the nobles!
 
 			if(rs.next()) {
 				// If the entry is older than 14 days...
 				if(rs.getLong("timecached") < (Instant.now().getEpochSecond() - (86400 * 14))) {
-					PreparedStatement deleter = cacheconn.prepareStatement("DELETE FROM nhentai WHERE url=?");
-					deleter.setString(1, load.getUrl());
-					deleter.execute();
+					PreparedStatement coronavirus = cacheConn.prepareStatement("DELETE FROM nhentai WHERE url=?");
+					//execute the old queries!
+					coronavirus.setString(1, load.getUrl());
+					coronavirus.execute();
 
-					deleter.close();
+					coronavirus.close();
+					//i wish
 					return false;
 				}
 
@@ -256,11 +278,11 @@ public class DBHandler {
 
 				// Load in all the HashSets
 
-				load.setArtists(loadSet("nhartists", url, cacheconn));
-				load.setGroups(loadSet("nhgroups", url, cacheconn));
-				load.setParodies(loadSet("nhparodies", url, cacheconn));
-				load.setChars(loadSet("nhchars", url, cacheconn));
-				load.setTags(loadSet("nhtags", url, cacheconn));
+				load.setArtists(loadSetFromTable("nhartists", url, cacheConn));
+				load.setGroups(loadSetFromTable("nhgroups", url, cacheConn));
+				load.setParodies(loadSetFromTable("nhparodies", url, cacheConn));
+				load.setChars(loadSetFromTable("nhchars", url, cacheConn));
+				load.setTags(loadSetFromTable("nhtags", url, cacheConn));
 				return true;
 			}
 			else {
@@ -275,13 +297,15 @@ public class DBHandler {
 	}
 
 	/**
-	 * Caches the data currently inside this EHFetcher.
+	 * Caches the data currently inside the passed EHFetcher to internal storage.
 	 * @param data The EHFetcher with data to be cached.
 	 */
 	public void cache(EHFetcher data) {
-		try (Connection cacheconn = cache.getConnection()) {
-			PreparedStatement stmt = cacheconn.prepareStatement("INSERT INTO ehentai VALUES " +
+		try (Connection cacheConn = cache.getConnection()) {
+			PreparedStatement stmt = cacheConn.prepareStatement("INSERT INTO ehentai VALUES " +
 					"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+			//insert necessary values and tell bobby to fuck off
 			stmt.setString(1, data.getUrl());
 			stmt.setLong(2, Instant.now().getEpochSecond());
 			stmt.setInt(3, data.getGalleryId());
@@ -300,13 +324,13 @@ public class DBHandler {
 			
 			String url = data.getUrl();
 
-			insertSet(data.getArtists(),"ehartists", url, cacheconn);
-			insertSet(data.getGroups(),"ehgroups", url, cacheconn);
-			insertSet(data.getParodies(),"ehparodies", url, cacheconn);
-			insertSet(data.getChars(),"ehchars", url, cacheconn);
-			insertSet(data.getMaleTags(),"ehmaletags", url, cacheconn);
-			insertSet(data.getFemaleTags(),"ehfemaletags", url, cacheconn);
-			insertSet(data.getMiscTags(),"ehmisctags", url, cacheconn);
+			insertSetIntoTable(data.getArtists(),"ehartists", url, cacheConn);
+			insertSetIntoTable(data.getGroups(),"ehgroups", url, cacheConn);
+			insertSetIntoTable(data.getParodies(),"ehparodies", url, cacheConn);
+			insertSetIntoTable(data.getChars(),"ehchars", url, cacheConn);
+			insertSetIntoTable(data.getMaleTags(),"ehmaletags", url, cacheConn);
+			insertSetIntoTable(data.getFemaleTags(),"ehfemaletags", url, cacheConn);
+			insertSetIntoTable(data.getMiscTags(),"ehmisctags", url, cacheConn);
 
 			logger.info("Caching completed.");
 		} catch (SQLException e) {
@@ -316,13 +340,15 @@ public class DBHandler {
 	}
 
 	/**
-	 * Caches the data currently inside this NHFetcher.
+	 * Caches the data currently inside the passed NHFetcher to internal storage.
 	 * @param data The NHFetcher with data to be cached.
 	 */
 	public void cache(NHFetcher data) {
-		try (Connection cacheconn = cache.getConnection()) {
-			PreparedStatement stmt = cacheconn.prepareStatement("INSERT INTO nhentai VALUES " +
+		try (Connection cacheConn = cache.getConnection()) {
+			PreparedStatement stmt = cacheConn.prepareStatement("INSERT INTO nhentai VALUES " +
 					"(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+			//insert necessary values and tell bobby to fuck off
 			stmt.setString(1, data.getUrl());
 			stmt.setLong(2, Instant.now().getEpochSecond());
 			stmt.setString(3, data.getTitle());
@@ -337,11 +363,11 @@ public class DBHandler {
 
 			String url = data.getUrl();
 
-			insertSet(data.getArtists(),"nhartists", url, cacheconn);
-			insertSet(data.getGroups(),"nhgroups", url, cacheconn);
-			insertSet(data.getParodies(),"nhparodies", url, cacheconn);
-			insertSet(data.getChars(),"nhchars", url, cacheconn);
-			insertSet(data.getTags(),"nhtags", url, cacheconn);
+			insertSetIntoTable(data.getArtists(),"nhartists", url, cacheConn);
+			insertSetIntoTable(data.getGroups(),"nhgroups", url, cacheConn);
+			insertSetIntoTable(data.getParodies(),"nhparodies", url, cacheConn);
+			insertSetIntoTable(data.getChars(),"nhchars", url, cacheConn);
+			insertSetIntoTable(data.getTags(),"nhtags", url, cacheConn);
 
 			logger.info("Caching completed.");
 		} catch (SQLException e) {
@@ -350,8 +376,15 @@ public class DBHandler {
 		}
 	}
 
-	// Simple helper to load a HashSet from a table.
-	private HashSet<String> loadSet(String tableName, String url, Connection conn) throws SQLException {
+	/**
+	 * Fetches a HashSet from a table.
+	 * @param tableName
+	 * @param url
+	 * @param conn
+	 * @return
+	 * @throws SQLException
+	 */
+	private HashSet<String> loadSetFromTable(String tableName, String url, Connection conn) throws SQLException {
 		PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + tableName + " WHERE url=?");
 		stmt.setString(1, url);
 
@@ -365,8 +398,16 @@ public class DBHandler {
 		return results;
 	}
 
-	// Simple helper to insert a HashSet into a table.
-	private void insertSet(HashSet<String> tags, String tableName, String url, Connection conn) throws SQLException {
+	/**
+	 * Inserts a set of tags into the given table.
+	 * @param tags
+	 * @param tableName
+	 * @param url
+	 * @param conn
+	 * @throws SQLException
+	 */
+	private void insertSetIntoTable(HashSet<String> tags, String tableName, String url, Connection conn) throws SQLException {
+		//bobby cant touch tableName so we're good
 		PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + tableName + " VALUES (?, ?)");
 		for(String curTag : tags) {
 			stmt.setString(1, url);

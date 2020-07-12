@@ -190,6 +190,8 @@ public class EHApiHandler {
 			return payload;
 		}
 	}
+
+	//initialize HTTP threading objects
 	private final ArrayList<Pair<EHFetcher, CompletableFuture<JSONObject>>> queries;
 	private volatile boolean sleeping;
 	private final ThreadPoolExecutor executor;
@@ -210,6 +212,10 @@ public class EHApiHandler {
 		sleeping = status;
 	}
 
+	/**
+	 * Packages EHFetcher queries in bits of 25 at a time to minimalize traffic/bandwidth. Avoids the E-Hentai rate limit.
+	 *
+	 */
 	public void runGalleryQuery() {
 		logger.info("Now compiling the current gallery queries...");
 		try {
@@ -235,9 +241,11 @@ public class EHApiHandler {
 		}
 
 		setSleeping(false);
+		//allow next batch of queries
 
 		EHGalleryPayload payload = new EHGalleryPayload();
 
+		//build package
 		for (Pair<EHFetcher, CompletableFuture<JSONObject>> cur : curQueries) {
 			EHFetcher curData = cur.getLeft();
 			payload.addEntry(curData.getGalleryId(), curData.getGalleryToken());
@@ -250,6 +258,7 @@ public class EHApiHandler {
 
 			JSONArray gmetas = response.getJSONArray("gmetadata");
 
+			//Iterate through response data and resolve them individually
 			for(int i = 0; i < gmetas.length(); i++) {
 				JSONObject curResponse = gmetas.getJSONObject(i);
 
@@ -296,17 +305,33 @@ public class EHApiHandler {
 		return promise;
 	}
 
+	/**
+	 * Kickstarts query fetch thread.
+	 */
 	private synchronized void startGalleryQuery() {
 		executor.submit(
 				this::runGalleryQuery
 		);
 	}
 
+	/**
+	 * Sends a basic request.
+	 * @param payload
+	 * @return
+	 * @throws IOException
+	 */
 	public static JSONObject EHApiRequest(JSONObject payload) throws IOException {
 		HttpClient connect = HttpClients.custom().setConnectionManager(connManager).build();
 		return EHApiRequest(payload, connect);
 	}
 
+	/**
+	 * Overloads with extra data to send a request.
+	 * @param payload
+	 * @param connect
+	 * @return
+	 * @throws IOException
+	 */
 	public static JSONObject EHApiRequest(JSONObject payload, HttpClient connect) throws IOException {
 		logger.info("Sending payload...");
 		//logger.info(payload.toString(4));
