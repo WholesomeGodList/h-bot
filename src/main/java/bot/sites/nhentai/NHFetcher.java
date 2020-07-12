@@ -108,7 +108,7 @@ public class NHFetcher implements SiteFetcher {
 		pages = Integer.parseInt(doc.select("span.tags").select("a").stream().filter(div ->
 				div.attr("href").contains("pages")).findFirst().orElseThrow()
 				.select("span.name").text());
-		thumbnailUrl = doc.select("div#cover").select("img").first().attr("abs:src");
+		thumbnailUrl = doc.select("div#cover").select("img").first().attr("data-src");
 		favorites = Integer.parseInt(Pattern.compile("\\((\\d+)\\)").matcher(
 				doc.select("span.nobold").last().text())
 				.results().map(m -> m.group(1)).findFirst().orElseThrow());

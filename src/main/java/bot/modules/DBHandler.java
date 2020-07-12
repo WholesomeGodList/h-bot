@@ -48,7 +48,7 @@ public class DBHandler {
 				}
 			} catch (SQLException e) {
 				logger.error("Config database creation failed. Error details:");
-				logger.error(e.getStackTrace());
+				e.printStackTrace();
 			}
 		}
 		try {
@@ -65,7 +65,7 @@ public class DBHandler {
 			}
 		} catch (SQLException e) {
 			logger.error("Config database connection failed. Error details:");
-			logger.error(e.getStackTrace());
+			e.printStackTrace();
 		}
 
 		Connection cacheConn;
@@ -108,7 +108,7 @@ public class DBHandler {
 				}
 			} catch (SQLException e) {
 				logger.error("Config database creation failed. Error details:");
-				logger.error(e.getStackTrace());
+				e.printStackTrace();
 			}
 		}
 		try {
@@ -116,7 +116,7 @@ public class DBHandler {
 			cache.setUrl("jdbc:sqlite:cache.db");
 			cache.setMinIdle(2);
 			cache.setMaxIdle(5);
-			cache.setMaxTotal(30);
+			cache.setMaxTotal(100);
 
 			Connection conn = cache.getConnection();
 			if (conn != null) {
@@ -126,7 +126,7 @@ public class DBHandler {
 
 		} catch (SQLException e) { //fuck
 			logger.error("Config database connection failed. Error details:");
-			logger.error(e.getStackTrace());
+			e.printStackTrace();
 		}
 	}
 

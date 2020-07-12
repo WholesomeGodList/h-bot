@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,8 +21,8 @@ import java.util.concurrent.TimeUnit;
 public class BotMain {
 	private static final Logger logger = LogManager.getLogger(BotMain.class);
 	private static JDA myBot;
-	private static final DBHandler database = new DBHandler();
-	private static final EHApiHandler handler = new EHApiHandler();
+	private static DBHandler database;
+	private static EHApiHandler handler;
 	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
 	public static void main(String[] args) {
@@ -33,7 +34,14 @@ public class BotMain {
 			intents.add(GatewayIntent.DIRECT_MESSAGES);
 			intents.add(GatewayIntent.DIRECT_MESSAGE_REACTIONS);
 
+			logger.info("Loading handlers...");
+			Class.forName("org.sqlite.JDBC");
+
+			database = new DBHandler();
+			handler = new EHApiHandler();
+
 			myBot = JDABuilder.create(BotConfig.BOT_TOKEN, intents)
+					.disableCache(CacheFlag.ACTIVITY, CacheFlag.VOICE_STATE, CacheFlag.EMOTE, CacheFlag.CLIENT_STATUS)
 					.setChunkingFilter(ChunkingFilter.NONE)
 					.addEventListeners(new Wiretap(database, handler))
 					.setAutoReconnect(true)
@@ -42,8 +50,9 @@ public class BotMain {
 					.awaitReady();
 
 			logger.info("Bot has started!");
+
 			scheduler.scheduleAtFixedRate(new NHHook(database, myBot), 0, BotConfig.HOOK_FREQUENCY, TimeUnit.MINUTES);
-		} catch (LoginException | InterruptedException e) {
+		} catch (LoginException | InterruptedException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}

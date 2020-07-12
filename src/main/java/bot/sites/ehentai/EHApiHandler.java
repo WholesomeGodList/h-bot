@@ -60,7 +60,7 @@ public class EHApiHandler {
 	 *     ]
 	 * }} </pre>
 	 */
-	private static class EHGalleryPayload {
+	public static class EHGalleryPayload {
 		private JSONArray gid;
 
 		public EHGalleryPayload() {
@@ -326,7 +326,7 @@ public class EHApiHandler {
 	}
 
 	/**
-	 * Overloads with extra data to send a request.
+	 * Sends a basic request using a specific HttpClient.
 	 * @param payload
 	 * @param connect
 	 * @return
@@ -334,7 +334,7 @@ public class EHApiHandler {
 	 */
 	public static JSONObject EHApiRequest(JSONObject payload, HttpClient connect) throws IOException {
 		logger.info("Sending payload...");
-		//logger.info(payload.toString(4));
+		logger.info(payload.toString(4));
 
 		StringEntity payloadEntity = new StringEntity(payload.toString(), ContentType.APPLICATION_JSON);
 
@@ -353,6 +353,8 @@ public class EHApiHandler {
 		buf.close();
 
 		EntityUtils.consume(entity);
+
+		logger.info(jsonResponse.toString(4));
 
 		return jsonResponse;
 	}

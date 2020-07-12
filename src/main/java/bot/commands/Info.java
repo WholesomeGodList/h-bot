@@ -94,7 +94,7 @@ public class Info {
 							success -> {
 								success.addReaction("U+2705").queue();
 								success.addReaction("U+274C").queue();
-								Wiretap.registerSuspect(success.getId(), success.getAuthor().getId(), fetcher);
+								Wiretap.registerSuspect(success.getId(), author.getId(), fetcher);
 							}
 					);
 				}

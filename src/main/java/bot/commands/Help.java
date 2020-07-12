@@ -27,7 +27,7 @@ public class Help {
 		helpMsg.addField("Config Commands",
 				"""
 						- addhook: Registers this channel as a hook for the new doujin feed
-						- delhook: Unregisters this channel as a hook for the new doujin feed
+						- removehook: Unregisters this channel as a hook for the new doujin feed
 						- setprefix: Sets the prefix for this server
 						""",
 				false);
@@ -43,8 +43,6 @@ public class Help {
 						```
 						- search [-n] [query]: Queries for up to 100 doujins, and returns the ones it finds without any non-wholesome and warning tags (>badtags)
 						- deepsearch [-n] [query]: Queries for up to 250 doujins instead of 100. Usually not necessary.
-						- searcheh: >search but for e-hentai
-						- deepsearcheh: >deepsearch but for e-hentai
 						```
 						-n: non-restrictive (works for both search and deepsearch) (no longer blocks warning tags, just non-wholesome tags)
 						```

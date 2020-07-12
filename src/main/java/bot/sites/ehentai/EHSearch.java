@@ -8,6 +8,8 @@ import net.dv8tion.jda.api.entities.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -16,10 +18,11 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -29,7 +32,11 @@ public class EHSearch {
 
 	private static final String BASE_URL = "https://e-hentai.org/?f_cats=1017&f_search=";
 
-	public static void runSearch(MessageChannel channel, User author, String query, boolean restrict, int pages, EHApiHandler handler, DBHandler database) {
+	public static void runSearch(MessageChannel channel, User author, String query, boolean restrict, int pages, DBHandler database) {
+		channel.sendMessage(EmbedGenerator.createAlertEmbed("Searching...", "Please wait while the search is being done")).queue(
+				success -> success.delete().queueAfter(5, TimeUnit.SECONDS)
+		);
+		
 		// Query preprocessing
 		query = query.trim();
 		String urlQuery = generateUrl(query);
@@ -38,11 +45,11 @@ public class EHSearch {
 
 		Pattern gallery = Pattern.compile("https?://e[x\\-]hentai\\.org/g/(\\d+)/([\\da-f]{10})/");
 
-		ArrayList<ImmutablePair<String, CompletableFuture<EHFetcher>>> allQueries = new ArrayList<>();
+		ArrayList<EHFetcher> fetchers = new ArrayList<>();
 
 		for (int currentPage = 0; currentPage < pages; currentPage++) {
 			try {
-				ArrayList<ImmutablePair<String, CompletableFuture<EHFetcher>>> queries = new ArrayList<>();
+				ArrayList<ImmutablePair<Integer, String>> queries = new ArrayList<>();
 
 				String curUrlQuery = urlQuery + currentPage; // yes, E-Hentai's pages are zero indexed
 				logger.info("Current page: " + (currentPage + 1));
@@ -51,32 +58,37 @@ public class EHSearch {
 				Document doc = Jsoup.connect(curUrlQuery).get();
 
 				doc.select("a[href]").stream().map(e -> e.attr("abs:href"))
-						.filter(gallery.asMatchPredicate())
-						.forEachOrdered(str -> queries.add(new ImmutablePair<>(str, new CompletableFuture<>())));
+						.filter(gallery.asMatchPredicate()).map(gallery::matcher).filter(Matcher::find)
+						.forEachOrdered(m -> queries.add(new ImmutablePair<>(Integer.parseInt(m.group(1)), m.group(2))));
 
 				// If no new results were found, we stop here
 				if(queries.isEmpty()) {
 					break;
 				}
 
-				// Submit all promises for resolution simultaneously (using EHApiHandler)
-				for (ImmutablePair<String, CompletableFuture<EHFetcher>> curPair : queries) {
-					CompletableFuture<EHFetcher> curPromise = curPair.getRight();
-					String curUrl = curPair.getLeft();
+				// Query the E-Hentai API
+				EHApiHandler.EHGalleryPayload payload = new EHApiHandler.EHGalleryPayload();
 
-					executor.submit(
-							() -> {
-								try {
-									curPromise.complete(new EHFetcher(curUrl, handler, database));
-								} catch (IOException e) {
-									curPromise.completeExceptionally(e);
-								}
-							});
+				queries.forEach(s -> payload.addEntry(s.getLeft(), s.getRight()));
+
+				JSONObject data = EHApiHandler.EHApiRequest(payload.getPayload());
+				if (data.has("error")) {
+					logger.info("Some error happened: " + data.getString("error"));
+					continue;
 				}
 
-				allQueries.addAll(queries);
+				JSONArray metadatas = data.getJSONArray("gmetadata");
+				ArrayList<EHFetcher> tempResults = new ArrayList<>();
 
-				Thread.sleep(100);
+				for(int i = 0; i < metadatas.length(); i++) {
+					tempResults.add(new EHFetcher(metadatas.getJSONObject(i), database));
+				}
+
+				tempResults.stream().filter(fetcher ->
+						TagChecker.tagCheck(fetcher.getTags(), restrict, fquery).getLeft() == TagChecker.TagStatus.OK)
+						.forEachOrdered(fetchers::add);
+
+				Thread.sleep(1000);
 			} catch (HttpStatusException e) {
 				logger.info("Error: HTTP status " + e.getStatusCode());
 			} catch (IOException | InterruptedException e) {
@@ -84,12 +96,6 @@ public class EHSearch {
 				e.printStackTrace();
 			}
 		}
-
-		// Find all the successful promises (filtering out anything that threw an exception), filter out anything with bad tags, and return them
-		ArrayList<EHFetcher> fetchers = allQueries.stream().map(ImmutablePair::getRight)
-				.map(EHSearch::joinWithoutExceptions).filter(Objects::nonNull)
-				.filter(fetcher -> TagChecker.tagCheck(fetcher.getTags(), restrict, fquery).getLeft() == TagChecker.TagStatus.OK)
-				.collect(Collectors.toCollection(ArrayList::new));
 
 		// At this point, fetchers is our final search results. Start returning the results.
 		if(fetchers.isEmpty()) {
@@ -111,19 +117,12 @@ public class EHSearch {
 			if(channel.getType() == ChannelType.TEXT) {
 				channel.sendMessage(EmbedGenerator.createAlertEmbed("Search Results", "More than 10 results - sending the results to your DMs!")).complete();
 				author.openPrivateChannel().queue(
-						pm -> {
-							pm.sendMessage(EmbedGenerator.createAlertEmbed("Search Results", "Results found: " + fetchers.size())).queue();
-							pm.sendMessage("Full results:\n" +
-									fetchers.stream().map(fetcher -> "<" + fetcher.getUrl() + ">").collect(Collectors.joining("\n"))).queue(
-											success -> pm.close().queue()
-							);
-						}
+						pm -> sendResults(pm, fetchers, fquery)
 				);
 			}
 			else {
 				channel.sendMessage(EmbedGenerator.createAlertEmbed("Search Results", "Results found: " + fetchers.size())).queue();
-				channel.sendMessage("Full results:\n" +
-						fetchers.stream().map(fetcher -> "<" + fetcher.getUrl() + ">").collect(Collectors.joining("\n"))).queue();
+				sendResults(channel, fetchers, fquery);
 			}
 		}
 	}
@@ -137,6 +136,31 @@ public class EHSearch {
 			e.printStackTrace();
 
 			return null;
+		}
+	}
+
+	private static void sendResults(MessageChannel channel, ArrayList<EHFetcher> fetchers, String query) {
+		channel.sendMessage(EmbedGenerator.createAlertEmbed("Search Results", "Results found: " + fetchers.size())).queue();
+
+		StringBuilder current = new StringBuilder();
+
+		current.append("Full results for `").append(query).append("`:");
+		while (!fetchers.isEmpty()) {
+			current.append("\n<").append(fetchers.get(0).getUrl()).append(">");
+			fetchers.remove(0);
+			if (current.length() > 1500) {
+				channel.sendMessage(current.toString()).complete();
+				current = new StringBuilder();
+			}
+		}
+
+		if(channel.getType() == ChannelType.PRIVATE) {
+			PrivateChannel pm = (PrivateChannel) channel;
+			pm.sendMessage(current.toString()).queue(
+					success -> pm.close().queue()
+			);
+		} else {
+			channel.sendMessage(current.toString()).queue();
 		}
 	}
 

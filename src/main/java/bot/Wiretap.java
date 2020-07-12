@@ -55,12 +55,8 @@ public class Wiretap extends ListenerAdapter {
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
 		// Someone sent something!
-
 		// Ignore conditions
 		if (event.getAuthor().isBot()) {
-			return;
-		}
-		if (event.getMember() == null) {
 			return;
 		}
 
@@ -106,7 +102,7 @@ public class Wiretap extends ListenerAdapter {
 		content = content.substring(prefix.length()).trim();
 		String[] argSplitter = content.split(" ", 2);
 		String command = argSplitter[0];
-		String args = argSplitter[1];
+		String args = (argSplitter.length > 1) ? argSplitter[1] : null;
 
 		if (!Validator.isCommand(command)) {
 			// Not a command
@@ -118,6 +114,8 @@ public class Wiretap extends ListenerAdapter {
 			channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "This channel is not NSFW", "This bot can only be used in NSFW channels!")).queue();
 			return;
 		}
+
+		logger.info("Command received: " + command);
 		try {
 			switch (command) {
 				case "help" -> {
@@ -144,18 +142,18 @@ public class Wiretap extends ListenerAdapter {
 					channel.sendTyping().queue();
 
 					boolean restrict = true;
-					if(args.startsWith("-n ")) {
+					if(args != null && args.startsWith("-n ")) {
 						args = args.substring(3);
 						restrict = false;
 					}
 
-					EHSearch.runSearch(channel, event.getAuthor(), args, restrict, command.equals("searcheh") ? 4 : 10, handler, database);
+					EHSearch.runSearch(channel, event.getAuthor(), args, restrict, command.equals("searcheh") ? 4 : 10, database);
 				}
 				case "search", "deepsearch" -> {
 					channel.sendTyping().queue();
 
 					boolean restrict = true;
-					if(args.startsWith("-n ")) {
+					if(args != null && args.startsWith("-n ")) {
 						args = args.substring(3);
 						restrict = false;
 					}
@@ -163,6 +161,9 @@ public class Wiretap extends ListenerAdapter {
 					NHSearch.runSearch(channel, event.getAuthor(), args, restrict, command.equals("search") ? 4 : 10, database);
 				}
 				case "addhook" -> {
+					if(event.getMember() == null) {
+						return;
+					}
 					if (event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
 						channel.sendMessage("New doujins from the telecom will now be relayed here").queue();
 						database.addHook(event.getChannel().getId(), event.getGuild().getId());
@@ -170,7 +171,10 @@ public class Wiretap extends ListenerAdapter {
 						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "You do not have the permission Manage Server!")).queue();
 					}
 				}
-				case "delhook" -> {
+				case "removehook" -> {
+					if(event.getMember() == null) {
+						return;
+					}
 					if (event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
 						channel.sendMessage("New doujins from the telecom will no longer be relayed here").queue();
 						database.removeHook(event.getChannel().getId());
@@ -179,7 +183,14 @@ public class Wiretap extends ListenerAdapter {
 					}
 				}
 				case "setprefix" -> {
+					if(event.getMember() == null) {
+						return;
+					}
 					if (event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
+						if(args == null) {
+							channel.sendMessage("Please specify a prefix.").queue();
+							return;
+						}
 						try {
 							if(args.trim().length() > 10) {
 								channel.sendMessage("That prefix is too long. Please shorten it to 10 characters or less.").queue();
@@ -216,6 +227,10 @@ public class Wiretap extends ListenerAdapter {
 			return;
 		}
 
+		if(event.getUser() == null || event.getUser().isBot()) {
+			return;
+		}
+
 		// Handle any wackiness
 		if (event.getUser() == null) {
 			return;
@@ -249,18 +264,24 @@ public class Wiretap extends ListenerAdapter {
 
 				channel.sendMessage(embed).queue();
 				suspects.remove(messageId);
-			} else if (reaction.equals("U+274C")) {
+			} else if (reaction.equals("U+274c")) {
 				// X
 				logger.info("X reaction detected. Closing...");
 				channel.deleteMessageById(messageId).queue();
 				suspects.remove(messageId);
 			} else {
 				// Not a valid reaction. Yeet it.
-				event.getReaction().removeReaction().queue();
+				logger.info("Invalid reaction. Deleting...");
+				if(channel.getType() == ChannelType.TEXT) {
+					event.getReaction().removeReaction(event.getUser()).queue();
+				}
 			}
 		} else {
+			logger.info("Wrong person. Deleting...");
 			// Wrong dude. Yeet the reaction into the sun.
-			event.getReaction().removeReaction().queue();
+			if(channel.getType() == ChannelType.TEXT) {
+				event.getReaction().removeReaction(event.getUser()).queue();
+			}
 		}
 	}
 }

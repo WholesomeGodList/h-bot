@@ -121,6 +121,13 @@ public class EHFetcher implements SiteFetcher {
 		}
 	}
 
+	public EHFetcher(JSONObject obj, @Nullable DBHandler database) {
+		this.url = "https://e-hentai.org/g/" + obj.getInt("gid") + "/" + obj.getString("token") + "/";
+		this.galleryId = obj.getInt("gid");
+		this.galleryToken = obj.getString("token");
+		loadFields(obj, database);
+	}
+
 	//--------------------------------
 	// INSTANCE FIELDS
 	//--------------------------------

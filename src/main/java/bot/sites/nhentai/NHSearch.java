@@ -4,11 +4,7 @@ import bot.commands.Info;
 import bot.modules.DBHandler;
 import bot.modules.EmbedGenerator;
 import bot.modules.TagList;
-import bot.sites.ehentai.EHSearch;
-import net.dv8tion.jda.api.entities.ChannelType;
-import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jsoup.HttpStatusException;
@@ -22,21 +18,22 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class NHSearch {
-	public static void main(String[] args) {
-		System.out.println(generateUrl("sword art online"));
-	}
-
-	private static final Logger logger = LogManager.getLogger(EHSearch.class);
+	private static final Logger logger = LogManager.getLogger(NHSearch.class);
 	private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
 
 	private static final String BASE_URL = "https://nhentai.net/search/?q=";
 
 	public static void runSearch(MessageChannel channel, User author, String query, boolean restrict, int pages, DBHandler database) {
+		channel.sendMessage(EmbedGenerator.createAlertEmbed("Searching...", "Please wait while the search is being done")).queue(
+				success -> success.delete().queueAfter(5, TimeUnit.SECONDS)
+		);
+
 		// Query preprocessing
 		query = query.trim();
 		String urlQuery = generateUrl(query);
@@ -49,10 +46,8 @@ public class NHSearch {
 
 		for (int currentPage = 1; currentPage <= pages; currentPage++) {
 			try {
-
 				String curUrlQuery = urlQuery + currentPage;
 				logger.info("Current page: " + (currentPage));
-				logger.info("Query: " + curUrlQuery);
 
 				Document doc = Jsoup.connect(curUrlQuery).get();
 				
@@ -102,20 +97,38 @@ public class NHSearch {
 			if(channel.getType() == ChannelType.TEXT) {
 				channel.sendMessage(EmbedGenerator.createAlertEmbed("Search Results", "More than 10 results - sending the results to your DMs!")).complete();
 				author.openPrivateChannel().queue(
-						pm -> {
-							pm.sendMessage(EmbedGenerator.createAlertEmbed("Search Results", "Results found: " + allResults.size())).queue();
-							pm.sendMessage("Full results:\n" +
-									allResults.stream().map(str -> "<" + str + ">").collect(Collectors.joining("\n"))).queue(
-									success -> pm.close().queue()
-							);
-						}
+						pm -> sendResults(pm, allResults, fquery)
 				);
 			}
 			else {
-				channel.sendMessage(EmbedGenerator.createAlertEmbed("Search Results", "Results found: " + allResults.size())).queue();
-				channel.sendMessage("Full results:\n" +
-						allResults.stream().map(str -> "<" + str + ">").collect(Collectors.joining("\n"))).queue();
+				sendResults(channel, allResults, fquery);
 			}
+		}
+	}
+
+	private static void sendResults(MessageChannel channel, ArrayList<String> allResults, String query) {
+		channel.sendMessage(EmbedGenerator.createAlertEmbed("Search Results", "Results found: " + allResults.size())).queue();
+
+		StringBuilder current = new StringBuilder();
+
+		current.append("Full results for `").append(query).append("`:");
+		while (!allResults.isEmpty()) {
+			current.append("\n<").append(allResults.get(0)).append(">");
+			allResults.remove(0);
+			if (current.length() > 1500) {
+				channel.sendMessage(current.toString()).queue();
+				current = new StringBuilder();
+			}
+		}
+
+
+		if(channel.getType() == ChannelType.PRIVATE) {
+			PrivateChannel pm = (PrivateChannel) channel;
+			pm.sendMessage(current.toString()).queue(
+					success -> pm.close().queue()
+			);
+		} else {
+			channel.sendMessage(current.toString()).queue();
 		}
 	}
 

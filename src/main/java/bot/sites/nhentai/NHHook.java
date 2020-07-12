@@ -130,7 +130,7 @@ public class NHHook implements Runnable {
 			InputStream is = new FileInputStream(new File("./config.json"));
 			JSONObject setter = new JSONObject(new JSONTokener(is));
 			setter.put("lastNumber", latest);
-			FileWriter file = new FileWriter("./hook.json");
+			FileWriter file = new FileWriter("./config.json");
 			file.write(setter.toString(4));
 			file.close();
 		} catch (IOException e) {
