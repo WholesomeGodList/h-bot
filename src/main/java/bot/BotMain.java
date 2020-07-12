@@ -42,7 +42,7 @@ public class BotMain {
 					.awaitReady();
 
 			logger.info("Bot has started!");
-			scheduler.scheduleAtFixedRate(new NHHook(database, myBot), 0, 15, TimeUnit.MINUTES);
+			scheduler.scheduleAtFixedRate(new NHHook(database, myBot), 0, BotConfig.HOOK_FREQUENCY, TimeUnit.MINUTES);
 		} catch (LoginException | InterruptedException e) {
 			e.printStackTrace();
 		}
