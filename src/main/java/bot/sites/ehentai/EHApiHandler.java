@@ -1,5 +1,6 @@
 package bot.sites.ehentai;
 
+import bot.sites.NotFoundException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpEntity;
@@ -251,6 +252,17 @@ public class EHApiHandler {
 
 			for(int i = 0; i < gmetas.length(); i++) {
 				JSONObject curResponse = gmetas.getJSONObject(i);
+
+				if (curResponse.has("error")) {
+					// There's an error.
+					logger.info("An error happened in the payload: " + curResponse.getString("error"));
+
+					for(Pair<EHFetcher, CompletableFuture<JSONObject>> cur : curQueries) {
+						if(cur.getLeft().getGalleryId() == curResponse.getInt("gid")) {
+							cur.getRight().completeExceptionally(new NotFoundException(curResponse.getString("error")));
+						}
+					}
+				}
 				String curGalleryToken = curResponse.getString("token");
 
 				for(Pair<EHFetcher, CompletableFuture<JSONObject>> cur : curQueries) {

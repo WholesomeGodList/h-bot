@@ -150,7 +150,7 @@ public class Wiretap extends ListenerAdapter {
 			return;
 		}
 
-		//
+		// Handle any wackiness
 		if (event.getUser() == null) {
 			return;
 		}

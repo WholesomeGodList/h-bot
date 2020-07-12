@@ -165,6 +165,6 @@ public class Info {
 	}
 
 	public static String display(HashSet<String> list) {
-		return list.stream().sorted().collect(Collectors.joining(", "));
+		return list.isEmpty() ? "None" : list.stream().sorted().collect(Collectors.joining(", "));
 	}
 }
