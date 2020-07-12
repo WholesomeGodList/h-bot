@@ -32,7 +32,7 @@ public class Validator {
 	 */
 	private static final HashSet<String> allCommands = new HashSet<>(
 			Arrays.asList(
-					"help", "tags", "getpage", "info", "badtags", "warningtags",
+					"help", "tags", "info", "badtags", "warningtags",
 					"random", "search", "deepsearch", "addhook", "removehook",
 					"searcheh", "deepsearcheh", "setprefix"
 			)

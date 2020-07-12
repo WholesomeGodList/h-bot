@@ -2,6 +2,9 @@ package bot.modules;
 
 import bot.sites.ehentai.EHFetcher;
 import bot.sites.nhentai.NHFetcher;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.TextChannel;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.sql.*;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -138,10 +142,10 @@ public class DBHandler {
 		if (prefixes.containsKey(guildId)) {
 			prefix = prefixes.get(guildId);
 		} else {
-			try (Connection connfig = config.getConnection()) {
+			try (Connection configConn = config.getConnection()) {
 				//Create connection and fetch if internal cache doesn't have it
 
-				PreparedStatement stmt = connfig.prepareStatement("SELECT prefix FROM prefixes WHERE guild_id=?");
+				PreparedStatement stmt = configConn.prepareStatement("SELECT prefix FROM prefixes WHERE guild_id=?");
 				//fuck you bobby
 				stmt.setLong(1, Long.parseLong(guildId));
 				ResultSet rs = stmt.executeQuery();
@@ -161,6 +165,65 @@ public class DBHandler {
 		}
 
 		return prefix;
+	}
+
+	public void setPrefix(String prefix, String guildId) throws SQLException {
+		try (Connection configConn = config.getConnection()) {
+			prefixes.remove(guildId);
+
+			PreparedStatement deleteOldPrefix = configConn.prepareStatement("DELETE FROM prefixes WHERE guild_id=?");
+			deleteOldPrefix.setLong(1, Long.parseLong(guildId));
+			deleteOldPrefix.execute();
+
+			PreparedStatement stmt = configConn.prepareStatement("INSERT INTO prefixes VALUES (?, ?)");
+			stmt.setLong(1, Long.parseLong(guildId));
+			stmt.setString(2, prefix);
+
+			stmt.execute();
+
+			prefixes.put(guildId, prefix);
+		}
+	}
+
+	public void addHook(String channelId, String guildId) throws SQLException {
+		try (Connection configConn = config.getConnection()) {
+			PreparedStatement stmt = configConn.prepareStatement("INSERT INTO hookchannels VALUES (?, ?)");
+			stmt.setLong(1, Long.parseLong(guildId));
+			stmt.setString(2, channelId);
+
+			stmt.execute();
+		}
+	}
+
+	public void removeHook(String channelId) throws SQLException {
+		try (Connection configConn = config.getConnection()) {
+			PreparedStatement stmt = configConn.prepareStatement("DELETE FROM hookchannels WHERE channel_id=?");
+			stmt.setLong(1, Long.parseLong(channelId));
+
+			stmt.execute();
+		}
+	}
+
+	public ArrayList<TextChannel> getHookChannels(JDA jda) {
+		try (Connection configConn = config.getConnection()) {
+			Statement stmt = configConn.createStatement();
+			ResultSet rs = stmt.executeQuery("SELECT * FROM hookchannels");
+
+			ArrayList<TextChannel> results = new ArrayList<>();
+			while (rs.next()) {
+				Guild curGuild = jda.getGuildById(rs.getString(1));
+				if(curGuild == null) {
+					continue;
+				}
+				results.add(curGuild.getTextChannelById(rs.getString(2)));
+			}
+			stmt.close();
+			return results;
+		} catch (SQLException e) {
+			logger.error("Something went wrong when retrieving the hook channels.");
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/**
@@ -376,14 +439,6 @@ public class DBHandler {
 		}
 	}
 
-	/**
-	 * Fetches a HashSet from a table.
-	 * @param tableName
-	 * @param url
-	 * @param conn
-	 * @return
-	 * @throws SQLException
-	 */
 	private HashSet<String> loadSetFromTable(String tableName, String url, Connection conn) throws SQLException {
 		PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + tableName + " WHERE url=?");
 		stmt.setString(1, url);
@@ -398,14 +453,6 @@ public class DBHandler {
 		return results;
 	}
 
-	/**
-	 * Inserts a set of tags into the given table.
-	 * @param tags
-	 * @param tableName
-	 * @param url
-	 * @param conn
-	 * @throws SQLException
-	 */
 	private void insertSetIntoTable(HashSet<String> tags, String tableName, String url, Connection conn) throws SQLException {
 		//bobby cant touch tableName so we're good
 		PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + tableName + " VALUES (?, ?)");

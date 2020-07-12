@@ -42,15 +42,18 @@ public class Help {
 						-ya / yu: no yaoi / yuri
 						```
 						- search [-n] [query]: Queries for up to 100 doujins, and returns the ones it finds without any non-wholesome and warning tags (>badtags)
-						- deepsearch [-n] [query]: Queries for up to 250 doujins instead of 100. Use this only if you want to wait a long time.
-						- searcheh: >search but for e-hentai (significantly faster)
-						- deepsearcheh: >deepsearch but for e-hentai (significantly faster)
-						- searchhelp: Tips for searching with H-Bot
+						- deepsearch [-n] [query]: Queries for up to 250 doujins instead of 100. Usually not necessary.
+						- searcheh: >search but for e-hentai
+						- deepsearcheh: >deepsearch but for e-hentai
 						```
 						-n: non-restrictive (works for both search and deepsearch) (no longer blocks warning tags, just non-wholesome tags)
 						```
 						"""
 				, false);
+		helpMsg.addField("More Questions?",
+				"""
+					If you have more questions about the bot, check the FAQ [here](https://github.com/WholesomeGodList/h-bot).
+					""", false);
 		helpMsg.setTimestamp(Instant.now());
 
 		return helpMsg.build();

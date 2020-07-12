@@ -13,6 +13,7 @@ import bot.sites.ehentai.EHFetcher;
 import bot.sites.ehentai.EHSearch;
 import bot.sites.nhentai.NHFetcher;
 import bot.sites.nhentai.NHSearch;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -25,6 +26,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,9 +41,10 @@ public class Wiretap extends ListenerAdapter {
 	 * Creates a Wiretap listener to listen to messages.
 	 * The DBHandler will handle all the communication with databases.
 	 */
-	public Wiretap() {
-		database = new DBHandler();
-		handler = new EHApiHandler();
+	public Wiretap(DBHandler database, EHApiHandler handler) {
+		this.database = database;
+		this.handler = handler;
+
 		suspects = new HashMap<>();
 	}
 
@@ -55,6 +58,9 @@ public class Wiretap extends ListenerAdapter {
 
 		// Ignore conditions
 		if (event.getAuthor().isBot()) {
+			return;
+		}
+		if (event.getMember() == null) {
 			return;
 		}
 
@@ -155,6 +161,40 @@ public class Wiretap extends ListenerAdapter {
 					}
 
 					NHSearch.runSearch(channel, event.getAuthor(), args, restrict, command.equals("search") ? 4 : 10, database);
+				}
+				case "addhook" -> {
+					if (event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
+						channel.sendMessage("New doujins from the telecom will now be relayed here").queue();
+						database.addHook(event.getChannel().getId(), event.getGuild().getId());
+					} else {
+						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "You do not have the permission Manage Server!")).queue();
+					}
+				}
+				case "delhook" -> {
+					if (event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
+						channel.sendMessage("New doujins from the telecom will no longer be relayed here").queue();
+						database.removeHook(event.getChannel().getId());
+					} else {
+						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "You do not have the permission Manage Server!")).queue();
+					}
+				}
+				case "setprefix" -> {
+					if (event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
+						try {
+							if(args.trim().length() > 10) {
+								channel.sendMessage("That prefix is too long. Please shorten it to 10 characters or less.").queue();
+								return;
+							}
+							database.setPrefix(args.trim(), event.getGuild().getId());
+							channel.sendMessage("Your prefix has been set to `" + args.trim() +"`.").queue();
+						} catch (SQLException e) {
+							channel.sendMessage("Something went wrong when setting your prefix. Please try again.").queue();
+							logger.error("Prefix was not set properly.");
+							e.printStackTrace();
+						}
+					} else {
+						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "You do not have the permission Manage Server!")).queue();
+					}
 				}
 			}
 		} catch (InsufficientPermissionException e) {
