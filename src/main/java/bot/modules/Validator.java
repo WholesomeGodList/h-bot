@@ -45,8 +45,8 @@ public class Validator {
 
 	/**
 	 * Checks if a given query is a command.
-	 * @param query
-	 * @return
+	 * @param query The query to be checked.
+	 * @return If the query is a command or not.
 	 */
 	public static boolean isCommand(String query) {
 		return allCommands.contains(query);

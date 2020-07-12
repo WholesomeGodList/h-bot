@@ -3,6 +3,7 @@ package bot;
 import bot.commands.BadTags;
 import bot.commands.Help;
 import bot.commands.Info;
+import bot.commands.Tags;
 import bot.modules.DBHandler;
 import bot.modules.EmbedGenerator;
 import bot.modules.Validator;
@@ -124,6 +125,10 @@ public class Wiretap extends ListenerAdapter {
 				case "info" -> {
 					channel.sendTyping().queue();
 					Info.sendInfo(channel, args, event.getAuthor(), handler, database);
+				}
+				case "tags" -> {
+					channel.sendTyping().queue();
+					Tags.sendTags(channel, args, handler, database);
 				}
 				case "badtags", "warningtags" -> {
 					channel.sendTyping().queue();
