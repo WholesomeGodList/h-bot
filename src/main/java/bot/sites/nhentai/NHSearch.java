@@ -16,8 +16,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,7 +23,6 @@ import java.util.stream.Collectors;
 
 public class NHSearch {
 	private static final Logger logger = LogManager.getLogger(NHSearch.class);
-	private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
 
 	private static final String BASE_URL = "https://nhentai.net/search/?q=";
 
@@ -36,7 +33,10 @@ public class NHSearch {
 
 		// Query preprocessing
 		query = query.trim();
+		logger.info("Running search with query " + query);
 		String urlQuery = generateUrl(query);
+
+		logger.info("Search URL: " + urlQuery);
 
 		if(TagList.getIllegalTags().contains(query)) {
 			channel.sendMessage("***FBI OPEN UP***").queue();
