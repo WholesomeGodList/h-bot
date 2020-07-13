@@ -86,7 +86,7 @@ public class Wiretap extends ListenerAdapter {
 		}
 
 		// Handle any <> / []
-		Pattern pattern = Pattern.compile("[\\[<]\\s*(#?\\d+)\\s*[>\\]]");
+		Pattern pattern = Pattern.compile("[\\[{]\\s*(#?\\d+)\\s*[}\\]]");
 		Matcher matcher = pattern.matcher(content);
 		if (matcher.find()) {
 			content = prefix + "info " + matcher.group(1);
