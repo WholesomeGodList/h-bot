@@ -80,7 +80,7 @@ public class Help {
 						**[The Wholesome Hentai God List](https://wholesomelist.com)**
 						**[Discord Server](https://discord.com/invite/FQCR6qu)**
 						**[GitHub Repository](https://github.com/WholesomeGodList/h-bot)**
-						**[Invite the bot](https://discordapp.com/api/oauth2/authorize?client_id=608816072057159713&permissions=93248&scope=bot)**
+						**[Invite the bot](https://discord.com/api/oauth2/authorize?client_id=608816072057159713&permissions=93248&scope=bot)**
 						**[Our Patreon](https://patreon.com/WholesomeGodList)**
 						""", false);
 		infoEmbed.setFooter("Built by Stinggyray#1000", "https://images.emojiterra.com/twitter/v12/512px/1f914.png");
