@@ -27,7 +27,7 @@ public class BotMain {
 
 	public static void main(String[] args) {
 		try {
-			logger.info("Log file found!");
+			logger.info("Log file found! Loading bot...");
 			ArrayList<GatewayIntent> intents = new ArrayList<>();
 			intents.add(GatewayIntent.GUILD_MESSAGES);
 			intents.add(GatewayIntent.GUILD_MESSAGE_REACTIONS);
