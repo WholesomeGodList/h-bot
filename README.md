@@ -14,7 +14,12 @@
 
 I recommend checking out [the wiki](https://github.com/WholesomeGodList/h-bot/wiki/Home) for more details on how to use this bot, and what has changed in the rewrite.
 
-Discord bot built using the wonderful [JDA library](https://github.com/DV8FromTheWorld/JDA) that provides info about nhentai (AND NOW E-HENTAI!) doujins.
+Discord bot built using the wonderful [JDA library](https://github.com/DV8FromTheWorld/JDA) that provides info about doujins from these three sources:
+
+- nhentai
+- e-hentai/exhentai
+- Wholesome Hentai God List (https://wholesomelist.com)
+
 Focused on features that find wholesome, vanilla doujins (we are a vanilla server after all), and warns about any potentially objectionable tags.
 
 Join our Discord for support and vanilla doujins!
@@ -31,18 +36,7 @@ This rewrite is mostly documented, but any questions are still welcome.
 As I've stated, this bot has a *focus on wholesomeness*. This means that it will warn you about things like netorare, and will also have a suite of wholesomeness-focused commands and utilities. As for the functionality,
 H-Bot comes equipped with a lot of commands, plus a bootleg webhook for nhentai. It also conforms with Discord's terms of service by blocking any doujins with the lolicon or shotacon tags (and notably, also the `oppai loli` tag).
 
-- help - Your run-of-the-mill help command. Will display a useful embed of all the commands you can do.
-- tags - Gets all the tags of a doujin.
-- getpage - Gets the direct image link of a page of any doujin.
-- info - Gets the information of a doujin and packages it in a neat embed. Will also warn you about any potentially objectionable tags so you can avoid surprise NTR.
-- random - Gets a random doujin from the wholesome hentai god list.
-- badtags / warningtags - DMs the user a list of the bad tags / warning tags.
-- supportedsites / sites - Gives a list of the supported sites (currently only nhentai; planned expansion to exhentai)
-- search - Searches nhentai with the provided query, looking through 100 doujins sorting by popular. Will return results extremely quickly.
-- deepsearch - search, but with 250 doujins instead of 100. You will almost never need this.
-  - -n (works with both search and deepsearch) - nonrestrictive search, which relaxes the requirement to only not containing the bad tags.
-- searcheh - search but for e-hentai
-- deepsearcheh - deepsearch but for e-hentai
+For more functionality details, read the [wiki's Commands page](https://github.com/WholesomeGodList/h-bot/wiki/Commands).
 
 ### Webhook
 
@@ -67,7 +61,7 @@ If you would like to self-host this bot for your own servers instead of using my
 
 ### Create the Discord bot
 
-First off, you should [create the Discord bot](https://discordapp.com/developers). Click on New Application, name the bot whatever you want, attach a bot user, and invite it to your server from the OAuth2 tab (with the following permissions integer: 125952, meaning that in the URL that says `https://discordapp.com/api/oauth2/authorize?`, you should have the flag `&permissions=125952`.)
+First off, you should [create the Discord bot](https://discordapp.com/developers). Click on New Application, name the bot whatever you want, attach a bot user, and invite it to your server from the OAuth2 tab (with the following permissions integer: 93248, meaning that in the URL that says `https://discordapp.com/api/oauth2/authorize?`, you should have the flag `&permissions=93248`.)
 
 If you get confused by this, there are plenty of image tutorials on the Internet. Creating the Discord bot is a pretty involved process at first, so don't feel too bad.
 
