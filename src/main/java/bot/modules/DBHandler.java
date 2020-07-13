@@ -44,7 +44,7 @@ public class DBHandler {
 					Statement create = connectionConfig.createStatement();
 
 					create.execute("CREATE TABLE prefixes (guild_id INTEGER PRIMARY KEY, prefix text)");
-					create.execute(" CREATE TABLE hookchannels (guild_id INTEGER, channel_id INTEGER PRIMARY KEY);");
+					create.execute(" CREATE TABLE hookchannels (guild_id INTEGER, channel_id INTEGER);");
 				}
 			} catch (SQLException e) {
 				logger.error("Config database creation failed. Error details:");
