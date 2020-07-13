@@ -23,6 +23,7 @@ import org.jsoup.HttpStatusException;
 
 import java.awt.*;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -145,6 +146,7 @@ public class Info {
 		whInfo.addField("Tags", display(info.getTags()), false);
 
 		whInfo.setFooter("ID: #" + info.getId());
+		whInfo.setTimestamp(Instant.now());
 
 		return whInfo.build();
 	}

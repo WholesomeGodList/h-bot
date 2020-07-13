@@ -106,7 +106,7 @@ public class WHFetcher {
 
 		EntityUtils.consume(entity);
 
-		logger.info(jsonResponse.toString(4));
+		logger.debug(jsonResponse.toString(4));
 
 		return jsonResponse;
 	}

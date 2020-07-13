@@ -334,7 +334,7 @@ public class EHApiHandler {
 	 */
 	public static JSONObject EHApiRequest(JSONObject payload, HttpClient connect) throws IOException {
 		logger.info("Sending payload...");
-		logger.info(payload.toString(4));
+		logger.debug(payload.toString(4));
 
 		StringEntity payloadEntity = new StringEntity(payload.toString(), ContentType.APPLICATION_JSON);
 
@@ -354,7 +354,7 @@ public class EHApiHandler {
 
 		EntityUtils.consume(entity);
 
-		logger.info(jsonResponse.toString(4));
+		logger.debug(jsonResponse.toString(4));
 
 		return jsonResponse;
 	}
