@@ -6,13 +6,13 @@
 
 # Public Invite Link
 
-**[Invite this bot to your servers!](https://discord.com/api/oauth2/authorize?client_id=608816072057159713&permissions=93248&scope=bot)**
+## **[Invite this bot to your server!](https://discord.com/api/oauth2/authorize?client_id=608816072057159713&permissions=93248&scope=bot)**
 
 # Bot Information
 
 **The bot has been completely rewritten to allow scalability.**
 
-I recommend checking out the wiki for more details on how to use this bot, and what has changed in the rewrite.
+I recommend checking out [the wiki](https://github.com/WholesomeGodList/h-bot/wiki/Home) for more details on how to use this bot, and what has changed in the rewrite.
 
 Discord bot built using the wonderful [JDA library](https://github.com/DV8FromTheWorld/JDA) that provides info about nhentai (AND NOW E-HENTAI!) doujins.
 Focused on features that find wholesome, vanilla doujins (we are a vanilla server after all), and warns about any potentially objectionable tags.
