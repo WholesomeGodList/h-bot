@@ -395,7 +395,7 @@ public class DBHandler {
 			insertSetIntoTable(data.getFemaleTags(),"ehfemaletags", url, cacheConn);
 			insertSetIntoTable(data.getMiscTags(),"ehmisctags", url, cacheConn);
 
-			logger.info("Caching completed.");
+			logger.debug("Caching completed.");
 		} catch (SQLException e) {
 			logger.error("An error occurred during the cache insertion.");
 			e.printStackTrace();
@@ -432,7 +432,7 @@ public class DBHandler {
 			insertSetIntoTable(data.getChars(),"nhchars", url, cacheConn);
 			insertSetIntoTable(data.getTags(),"nhtags", url, cacheConn);
 
-			logger.info("Caching completed.");
+			logger.debug("Caching completed.");
 		} catch (SQLException e) {
 			logger.error("An error occurred during the cache insertion.");
 			e.printStackTrace();

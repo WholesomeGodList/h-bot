@@ -52,8 +52,8 @@ public class Tags {
 						display(taginator.getTags());
 
 				if(Validator.getArgType(taginator.getLink()) == Validator.ArgType.NHENTAI) {
-					msg += "\n\nnhentai tags:" +
-							display(new NHFetcher(args, database).getTags());
+					msg += "\n\nnhentai tags:\n" +
+							display(new NHFetcher(taginator.getLink(), database).getTags());
 				}
 
 				channel.sendMessage(msg).queue();
