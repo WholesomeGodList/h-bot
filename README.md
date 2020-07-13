@@ -6,11 +6,13 @@
 
 # Public Invite Link
 
-**Coming soon!**
+**[Invite this bot to your servers!](https://discord.com/api/oauth2/authorize?client_id=608816072057159713&permissions=93248&scope=bot)**
 
 # Bot Information
 
-**The bot is undergoing a full-scale rewrite to improve scalability. Once I complete the rewrite, I will release a public invite link.**
+**The bot has been completely rewritten to allow scalability.**
+
+I recommend checking out the wiki for more details on how to use this bot, and what has changed in the rewrite.
 
 Discord bot built using the wonderful [JDA library](https://github.com/DV8FromTheWorld/JDA) that provides info about nhentai (AND NOW E-HENTAI!) doujins.
 Focused on features that find wholesome, vanilla doujins (we are a vanilla server after all), and warns about any potentially objectionable tags.
@@ -27,24 +29,17 @@ This rewrite is mostly documented, but any questions are still welcome.
 
 # Functionality
 As I've stated, this bot has a *focus on wholesomeness*. This means that it will warn you about things like netorare, and will also have a suite of wholesomeness-focused commands and utilities. As for the functionality,
-H-Bot comes equipped with a lot of commands, plus a bootleg webhook for nhentai. It also conforms with Discord's terms of service by blocking any doujins with the lolicon or shotacon tags.
-
-The commands (MOST OF THESE ARE NOT IMPLEMENTED YET! Rewrites take time!) are as follows:
+H-Bot comes equipped with a lot of commands, plus a bootleg webhook for nhentai. It also conforms with Discord's terms of service by blocking any doujins with the lolicon or shotacon tags (and notably, also the `oppai loli` tag).
 
 - help - Your run-of-the-mill help command. Will display a useful embed of all the commands you can do.
 - tags - Gets all the tags of a doujin.
 - getpage - Gets the direct image link of a page of any doujin.
 - info - Gets the information of a doujin and packages it in a neat embed. Will also warn you about any potentially objectionable tags so you can avoid surprise NTR.
-- random - Gets a random doujin (by default restricted to English). There are a variety of tags you can use to blacklist certain types of doujins.
-  - -e - allows non-english results
-  - -nbt - does not allow any bad tags (can be found through the badtags command)
-  - -w - does not allow any bad tags OR warning tags (can be found through the badtags command)
-  - -i - does not allow incest / inseki
-  - -ya / -yu - does not allow yaoi / yuri
+- random - Gets a random doujin from the wholesome hentai god list.
 - badtags / warningtags - DMs the user a list of the bad tags / warning tags.
 - supportedsites / sites - Gives a list of the supported sites (currently only nhentai; planned expansion to exhentai)
-- search - Searches nhentai with the provided query, looking through 100 doujins sorting by popular, and returns the ones that do not contain any bad tags or warning tags AND have 3 or more tags, along with a random info embed
-- deepsearch - search, but with 250 doujins instead of 100. Will take a very long time.
+- search - Searches nhentai with the provided query, looking through 100 doujins sorting by popular. Will return results extremely quickly.
+- deepsearch - search, but with 250 doujins instead of 100. You will almost never need this.
   - -n (works with both search and deepsearch) - nonrestrictive search, which relaxes the requirement to only not containing the bad tags.
 - searcheh - search but for e-hentai
 - deepsearcheh - deepsearch but for e-hentai
@@ -68,7 +63,7 @@ Commands to set it up:
 - [Apache Commons HttpComponents](https://hc.apache.org/)
 
 # Setup
-If you would like to self-host this bot for your own servers, you're going to need a few steps.
+If you would like to self-host this bot for your own servers instead of using my invite link, you're going to need a few steps.
 
 ### Create the Discord bot
 
@@ -88,14 +83,16 @@ Download hbot.jar here: [![Releases](https://img.shields.io/github/v/release/Who
 
 To run, the bot expects 1 file. (Another one's optional.)
 - config.json
-- log4j2.xml (if you care about logging)
+- log4j2.xml (if you care about logging, which you really should... at the bare minimum, just place the sample in the same directory as the bot's jar).
 
-All of these files can be found in the `samples` folder. Go ahead and download them and place them in the **same directory** as the bot's jar file. For config.json, make sure that you replace the `"botToken": "Your bot token here"` with the bot token I told you to save earlier. This is essential to make sure your bot actually starts up.
+All of these files can be found in the `samples` folder. Go ahead and download them and place them in the **same directory** as the bot's jar file.
+
+For config.json, make sure that you replace the `"botToken": "Your bot token here"` with the bot token I told you to save earlier. This is essential to make sure your bot actually starts up. You can also configure the frequency with which the hook runs (in minutes) by changing `hooktime`. You can leave `latestNumber` alone. It's stored there only for use by the hook.
 
 Once you're done with all of that, your bot is ready to start.
 
 ### Startup
-Since I do use preview features in the source code, you won't be able to just run it using java -jar. This means this also requires JDK 13. If you don't know how to set up JDK 13, I recommend going to [AdoptOpenJDK and installing JDK 13](https://adoptopenjdk.net/?variant=openjdk13&jvmVariant=hotspot) through their easy-to-use binaries.
+Since I do use preview features in the source code, you won't be able to just run it using java -jar. This means this also requires JDK 14. If you don't know how to set up JDK 14, I recommend going to [AdoptOpenJDK and installing JDK 14](https://adoptopenjdk.net/?variant=openjdk14&jvmVariant=hotspot) through their easy-to-use binaries.
 
 To run the bot, you need to run the following command:
 ```
@@ -110,7 +107,7 @@ pause
 EXIT
 ```
 
-This will work as long as you put it in the same folder as the H-Bot jar. Make sure the bot is running using JDK 13. If it's not, this will not work. To ensure that it is running with JDK 13, instead of using `java`, you could instead use:
+This will work as long as you put it in the same folder as the H-Bot jar. Make sure the bot is running using JDK 14. If it's not, this will not work. To ensure that it is running with JDK 14, instead of using `java`, you could instead use:
 ```
 <your_path_to_java_14>\bin\java.exe --enable-preview -jar hbot.jar
 ```
@@ -120,7 +117,9 @@ For Windows and AdoptOpenJDK users, that path will be:
 "C:\Program Files\AdoptOpenJDK\<JDK/JRE 14 folder>\bin\java.exe
 ```
 
-Once you have all of this set up, you're pretty much good to go! One last thing.
+Once you have all of this set up, you're pretty much good to go! During startup, the bot will create and setup a few databases.
+
+One last thing.
 
 ### The Telecom
 If you want this telecom (functionality explained in the Functionality section) in your server, you're going to have to perform just a few extra steps.
