@@ -34,7 +34,7 @@ public class NHSearch {
 		// Query preprocessing
 		query = query.trim();
 		logger.info("Running search with query " + query);
-		String urlQuery = generateUrl(query);
+		String urlQuery = generateUrl(query, restrict);
 
 		logger.info("Search URL: " + urlQuery);
 
@@ -137,9 +137,11 @@ public class NHSearch {
 		}
 	}
 
-	private static String generateUrl(String query) {
+	private static String generateUrl(String query, boolean restrict) {
 		HashSet<String> allTags = TagList.getBadTags();
-		allTags.addAll(TagList.nonWholesomeTagsWithoutQuery(query));
+		if(restrict) {
+			allTags.addAll(TagList.nonWholesomeTagsWithoutQuery(query));
+		}
 		allTags.addAll(TagList.getIllegalTags());
 
 		query += " english";
