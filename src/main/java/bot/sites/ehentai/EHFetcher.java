@@ -61,7 +61,7 @@ public class EHFetcher implements SiteFetcher {
 	 * @throws IOException If something goes wrong with the fetching, an IOException is thrown.
 	 */
 	public EHFetcher(String url, EHApiHandler handler, @Nullable DBHandler database) throws IOException {
-		logger.info("Connecting to " + url);
+		logger.debug("Connecting to " + url);
 		// Handle URL
 		url = url.trim().replace("http://", "https://");
 		if(!url.endsWith("/")) {
@@ -203,7 +203,7 @@ public class EHFetcher implements SiteFetcher {
 
 		if(database != null) {
 			// Cache the data loaded
-			logger.info("Caching entry...");
+			logger.debug("Caching entry...");
 			database.cache(this);
 		}
 	}

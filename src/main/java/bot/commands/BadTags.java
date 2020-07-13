@@ -28,7 +28,7 @@ public class BadTags {
 		badTagEmbed.addField("--------", "", false);
 		addTagFields(badTagEmbed, unwholesomeTagFields, "The current warning tags:");
 
-		badTagEmbed.addField("Illegal tags:", "shotacon\n lolicon", false);
+		badTagEmbed.addField("Illegal tags:", "shotacon\n lolicon\n oppai loli", false);
 		badTagEmbed.addField("You can help!", "If you have any tags that you want to add" +
 				" to the warning tags list, please tell me (in the bot server (botinfo))!" +
 				" I'll add them if I think they're necessary.", false);

@@ -11,6 +11,7 @@ import bot.sites.SiteFetcher;
 import bot.sites.ehentai.EHApiHandler;
 import bot.sites.ehentai.EHFetcher;
 import bot.sites.ehentai.EHSearch;
+import bot.sites.godlist.WHFetcher;
 import bot.sites.nhentai.NHFetcher;
 import bot.sites.nhentai.NHSearch;
 import net.dv8tion.jda.api.Permission;
@@ -26,8 +27,10 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -104,6 +107,8 @@ public class Wiretap extends ListenerAdapter {
 		String command = argSplitter[0];
 		String args = (argSplitter.length > 1) ? argSplitter[1] : null;
 
+		logger.debug("args is \"" + args + "\"");
+
 		if (!Validator.isCommand(command)) {
 			// Not a command
 			return;
@@ -119,27 +124,27 @@ public class Wiretap extends ListenerAdapter {
 		try {
 			switch (command) {
 				case "help" -> {
-					channel.sendTyping().queue();
+					channel.sendTyping().complete();
 					channel.sendMessage(Help.getHelpEmbed()).queue();
 				}
 				case "botinfo" -> {
-					channel.sendTyping().queue();
+					channel.sendTyping().complete();
 					channel.sendMessage(Help.getInfoEmbed()).queue();
 				}
 				case "info" -> {
-					channel.sendTyping().queue();
+					channel.sendTyping().complete();
 					Info.sendInfo(channel, args, event.getAuthor(), handler, database);
 				}
 				case "tags" -> {
-					channel.sendTyping().queue();
+					channel.sendTyping().complete();
 					Tags.sendTags(channel, args, handler, database);
 				}
 				case "badtags", "warningtags" -> {
-					channel.sendTyping().queue();
+					channel.sendTyping().complete();
 					channel.sendMessage(BadTags.getBadTagEmbed()).queue();
 				}
 				case "searcheh", "deepsearcheh" -> {
-					channel.sendTyping().queue();
+					channel.sendTyping().complete();
 
 					boolean restrict = true;
 					if(args != null && args.startsWith("-n ")) {
@@ -147,25 +152,37 @@ public class Wiretap extends ListenerAdapter {
 						restrict = false;
 					}
 
-					EHSearch.runSearch(channel, event.getAuthor(), args, restrict, command.equals("searcheh") ? 4 : 10, database);
+					channel.sendTyping().complete();
+					EHSearch.runSearch(channel, event.getAuthor(), args, restrict, command.equals("searcheh") ? 2 : 5, database);
 				}
 				case "search", "deepsearch" -> {
-					channel.sendTyping().queue();
-
 					boolean restrict = true;
 					if(args != null && args.startsWith("-n ")) {
 						args = args.substring(3);
 						restrict = false;
 					}
 
+					channel.sendTyping().complete();
 					NHSearch.runSearch(channel, event.getAuthor(), args, restrict, command.equals("search") ? 4 : 10, database);
+				}
+				case "random" -> {
+					channel.sendTyping().complete();
+					channel.sendMessage(EmbedGenerator.createAlertEmbed("Random Doujin", "Retrieving a random doujin from the Wholesome God List...")).queue(
+							success -> success.delete().queueAfter(5, TimeUnit.SECONDS)
+					);
+					try {
+						int number = WHFetcher.getRandomNumber();
+						Info.sendInfo(channel, "#" + number, event.getAuthor(), handler, database);
+					} catch (IOException e) {
+						channel.sendMessage("Something went wrong when getting a random number. Try again, or report this bug if this persists.").queue();
+					}
 				}
 				case "addhook" -> {
 					if(event.getMember() == null) {
 						return;
 					}
 					if (event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
-						channel.sendMessage("New doujins from the telecom will now be relayed here").queue();
+						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Info", "New doujins from the telecom will now be relayed here")).queue();
 						database.addHook(event.getChannel().getId(), event.getGuild().getId());
 					} else {
 						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "You do not have the permission Manage Server!")).queue();
@@ -176,7 +193,7 @@ public class Wiretap extends ListenerAdapter {
 						return;
 					}
 					if (event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
-						channel.sendMessage("New doujins from the telecom will no longer be relayed here").queue();
+						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Info", "New doujins from the telecom will no longer be relayed here")).queue();
 						database.removeHook(event.getChannel().getId());
 					} else {
 						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "You do not have the permission Manage Server!")).queue();
@@ -188,16 +205,16 @@ public class Wiretap extends ListenerAdapter {
 					}
 					if (event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
 						if(args == null) {
-							channel.sendMessage("Please specify a prefix.").queue();
+							channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "Please specify a prefix!")).queue();
 							return;
 						}
 						try {
 							if(args.trim().length() > 10) {
-								channel.sendMessage("That prefix is too long. Please shorten it to 10 characters or less.").queue();
+								channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "That prefix is too long. Please shorten it to 10 characters or less.")).queue();
 								return;
 							}
 							database.setPrefix(args.trim(), event.getGuild().getId());
-							channel.sendMessage("Your prefix has been set to `" + args.trim() +"`.").queue();
+							channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Info", "Your prefix has been set to `" + args.trim() +"`.")).queue();
 						} catch (SQLException e) {
 							channel.sendMessage("Something went wrong when setting your prefix. Please try again.").queue();
 							logger.error("Prefix was not set properly.");
@@ -249,7 +266,7 @@ public class Wiretap extends ListenerAdapter {
 				// Checkmark
 				logger.info("Checkmark reaction detected. Sending info embed...");
 				channel.deleteMessageById(messageId).queue();
-				channel.sendTyping().queue();
+				channel.sendTyping().complete();
 
 				MessageEmbed embed;
 				if (cur.getRight() instanceof NHFetcher) {

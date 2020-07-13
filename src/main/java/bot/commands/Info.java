@@ -9,6 +9,7 @@ import bot.sites.NotFoundException;
 import bot.sites.SiteFetcher;
 import bot.sites.ehentai.EHApiHandler;
 import bot.sites.ehentai.EHFetcher;
+import bot.sites.godlist.WHFetcher;
 import bot.sites.nhentai.NHFetcher;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -32,14 +33,34 @@ public class Info {
 	private static final Logger logger = LogManager.getLogger(Info.class);
 
 	public static void sendInfo(MessageChannel channel, String args, User author, EHApiHandler handler, DBHandler database) {
-		if(Pattern.compile("^\\d+$").matcher(args).find()) {
+		if(args != null && Pattern.compile("^\\d+$").matcher(args).find()) {
 			args = "https://nhentai.net/g/" + Integer.parseInt(args) + "/";
 		}
 		Validator.ArgType validate = siteValidate(args, channel);
 		if(!validate.isValid()) {
 			return;
 		}
+
 		try {
+			if(validate == Validator.ArgType.GODLIST) {
+				if(args == null) {
+					// Something's gone seriously wrong.
+					logger.error("Bruh how is args null?????");
+					return;
+				}
+				WHFetcher wh = new WHFetcher(Integer.parseInt(args.substring(1)));
+				channel.sendMessage(getDoujinInfoEmbed(wh)).queue();
+
+				if(Validator.getArgType(wh.getLink()) == Validator.ArgType.NHENTAI) {
+					channel.sendTyping().complete();
+					args = wh.getLink();
+					validate = Validator.ArgType.NHENTAI;
+				}
+				else {
+					return;
+				}
+			}
+
 			ImmutablePair<TagChecker.TagStatus, HashSet<String>> checker;
 			MessageEmbed embed;
 
@@ -107,6 +128,25 @@ public class Info {
 			channel.sendMessage("An error occurred. Please try again, or ping my owner if this persists.").queue();
 			e.printStackTrace();
 		}
+	}
+	
+	public static MessageEmbed getDoujinInfoEmbed(WHFetcher info) {
+		EmbedBuilder whInfo = new EmbedBuilder();
+		whInfo.setColor(Color.BLACK);
+
+		whInfo.setAuthor("Entry Info", null, "https://i.redd.it/fkg9yip5yyl21.png");
+		whInfo.setTitle(info.getTitle(), info.getLink());
+		whInfo.setDescription("by " + info.getAuthor());
+		whInfo.addField("Warning", info.getWarning(), true);
+		whInfo.addField("Tier", info.getTier(), true);
+		whInfo.addField("Parody", info.getParody(), true);
+
+		whInfo.addField("Pages", ""+info.getPages(), false);
+		whInfo.addField("Tags", display(info.getTags()), false);
+
+		whInfo.setFooter("ID: #" + info.getId());
+
+		return whInfo.build();
 	}
 
 	/**

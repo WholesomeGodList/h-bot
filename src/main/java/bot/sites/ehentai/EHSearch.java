@@ -4,6 +4,7 @@ import bot.commands.Info;
 import bot.modules.DBHandler;
 import bot.modules.EmbedGenerator;
 import bot.modules.TagChecker;
+import bot.modules.TagList;
 import net.dv8tion.jda.api.entities.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.LogManager;
@@ -36,10 +37,15 @@ public class EHSearch {
 		channel.sendMessage(EmbedGenerator.createAlertEmbed("Searching...", "Please wait while the search is being done")).queue(
 				success -> success.delete().queueAfter(5, TimeUnit.SECONDS)
 		);
-		
+
 		// Query preprocessing
 		query = query.trim();
 		String urlQuery = generateUrl(query);
+
+		if(TagList.getIllegalTags().contains(query)) {
+			channel.sendMessage("***FBI OPEN UP***").queue();
+			return;
+		}
 
 		final String fquery = query;
 

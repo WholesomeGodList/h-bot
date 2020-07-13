@@ -16,6 +16,7 @@ public class Validator {
 		INVALID(false),
 		NHENTAI(true),
 		EHENTAI(true),
+		GODLIST(true),
 		VALID(true);
 
 		private final boolean valid;
@@ -34,7 +35,7 @@ public class Validator {
 			Arrays.asList(
 					"help", "tags", "info", "badtags", "warningtags",
 					"random", "search", "deepsearch", "addhook", "removehook",
-					"searcheh", "deepsearcheh", "setprefix"
+					"searcheh", "deepsearcheh", "setprefix", "botinfo"
 			)
 	);
 
@@ -61,8 +62,8 @@ public class Validator {
 	 * @return An ArgType representing whether the argument was valid or not.
 	 */
 	public static ArgType validate(String args, int argCount, Pattern[] regexes, MessageChannel channel) {
-		if(args.split(" ").length < argCount) {
-			channel.sendMessage("Please supply a link or numbers!").queue();
+		if(args == null || args.split(" ").length < argCount) {
+			channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "Please supply a link or numbers!")).queue();
 			return ArgType.INVALID;
 		}
 		Matcher cursedMatcher = cursed.matcher(args);
@@ -80,7 +81,7 @@ public class Validator {
 		}
 
 		if(!matches) {
-			channel.sendMessage("Not a supported site / valid URL!").queue();
+			channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "Please supply a link or numbers!")).queue();
 			return ArgType.INVALID;
 		}
 		return ArgType.VALID;
@@ -95,6 +96,7 @@ public class Validator {
 		Pattern ehPage = Pattern.compile("https?://e[x\\-]hentai\\.org/s/([\\da-f]{10})/(\\d+)-(\\d+)/");
 		Pattern ehGallery = Pattern.compile("https?://e[x\\-]hentai\\.org/g/(\\d+)/([\\da-f]{10})/?");
 		Pattern nhGallery = Pattern.compile("https?://nhentai\\.net/g/\\d{1,6}/?");
+		Pattern godList = Pattern.compile("#\\d{1,4}");
 
 		Matcher nhGalleryMatcher = nhGallery.matcher(url);
 		if(nhGalleryMatcher.find()) {
@@ -107,6 +109,10 @@ public class Validator {
 		Matcher ehPageMatcher = ehPage.matcher(url);
 		if(ehPageMatcher.find()) {
 			return ArgType.EHENTAI;
+		}
+		Matcher godListMatcher = godList.matcher(url);
+		if(godListMatcher.find()) {
+			return ArgType.GODLIST;
 		}
 
 		return ArgType.INVALID;
@@ -132,7 +138,9 @@ public class Validator {
 		Pattern ehPage = Pattern.compile("https?://e[x\\-]hentai\\.org/s/([\\da-f]{10})/(\\d+)-(\\d+)/");
 		Pattern ehGallery = Pattern.compile("https?://e[x\\-]hentai\\.org/g/(\\d+)/([\\da-f]{10})/?");
 		Pattern nhGallery = Pattern.compile("https?://nhentai\\.net/g/\\d{1,6}/?");
-		if(!validate(args, argCount, new Pattern[]{ehPage, ehGallery, nhGallery}, channel).isValid()) {
+		Pattern godList = Pattern.compile("#\\d{1,4}");
+
+		if(!validate(args, argCount, new Pattern[]{ehPage, ehGallery, nhGallery, godList}, channel).isValid()) {
 			return ArgType.INVALID;
 		}
 

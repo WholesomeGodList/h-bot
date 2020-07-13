@@ -38,6 +38,11 @@ public class NHSearch {
 		query = query.trim();
 		String urlQuery = generateUrl(query);
 
+		if(TagList.getIllegalTags().contains(query)) {
+			channel.sendMessage("***FBI OPEN UP***").queue();
+			return;
+		}
+
 		final String fquery = query;
 
 		Pattern gallery = Pattern.compile("/g/(\\d{1,6})/?");

@@ -4,6 +4,7 @@ import bot.modules.DBHandler;
 import bot.modules.Validator;
 import bot.sites.ehentai.EHApiHandler;
 import bot.sites.ehentai.EHFetcher;
+import bot.sites.godlist.WHFetcher;
 import bot.sites.nhentai.NHFetcher;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import org.jsoup.HttpStatusException;
@@ -17,7 +18,7 @@ import static bot.modules.Validator.siteValidate;
 
 public class Tags {
 	public static void sendTags(MessageChannel channel, String args, EHApiHandler handler, DBHandler database) {
-		if (Pattern.compile("^\\d+$").matcher(args).find()) {
+		if (args != null && Pattern.compile("^\\d+$").matcher(args).find()) {
 			args = "https://nhentai.net/g/" + Integer.parseInt(args) + "/";
 		}
 		Validator.ArgType validate = siteValidate(args, channel);
@@ -39,6 +40,21 @@ public class Tags {
 						display(taginator.getFemaleTags()) + "\n\n" +
 						"Misc tags:\n" +
 						display(taginator.getMiscTags());
+
+				channel.sendMessage(msg).queue();
+			} else if (validate == Validator.ArgType.GODLIST) {
+				if(args == null) {
+					return;
+				}
+				WHFetcher taginator = new WHFetcher(Integer.parseInt(args.substring(1)));
+				String msg = "Tags for " + taginator.getTitle() + ":\n" +
+						"God List tags:\n" +
+						display(taginator.getTags());
+
+				if(Validator.getArgType(taginator.getLink()) == Validator.ArgType.NHENTAI) {
+					msg += "\n\nnhentai tags:" +
+							display(new NHFetcher(args, database).getTags());
+				}
 
 				channel.sendMessage(msg).queue();
 			}

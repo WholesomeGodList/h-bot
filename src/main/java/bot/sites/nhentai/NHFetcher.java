@@ -27,7 +27,7 @@ public class NHFetcher implements SiteFetcher {
 	 * @throws IOException If something goes wrong with the fetching, an IOException is thrown.
 	 */
 	public NHFetcher(String url, @Nullable DBHandler database) throws IOException {
-		logger.info("Connecting to " + url);
+		logger.debug("Connecting to " + url);
 		// Handle URL
 		url = url.trim().replace("http://", "https://");
 		if(!url.endsWith("/")) {
@@ -84,8 +84,8 @@ public class NHFetcher implements SiteFetcher {
 				"(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*$"
 		);
 
-		String title = doc.select("h1.title").first().text().trim();
-		String titleJapanese = doc.select("h2.title").first().text().trim();
+		String title = doc.select("h1.title").first() == null ? "None" : doc.select("h1.title").first().text().trim();
+		String titleJapanese = doc.select("h2.title").first() == null ? "None" : doc.select("h2.title").first().text().trim();
 
 		Matcher titleMatcher = titleRegex.matcher(title);
 		Matcher japaneseTitleMatcher = titleRegex.matcher(titleJapanese);
@@ -116,7 +116,7 @@ public class NHFetcher implements SiteFetcher {
 
 		if(database != null) {
 			// Cache the data loaded
-			logger.info("Caching entry...");
+			logger.debug("Caching entry...");
 			database.cache(this);
 		}
 	}

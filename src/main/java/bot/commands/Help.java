@@ -14,33 +14,38 @@ public class Help {
 		helpMsg.setAuthor("H-Bot", null, "https://i.redd.it/fkg9yip5yyl21.png");
 		helpMsg.setTitle("For easily accessing info from nhentai and e-hentai");
 		helpMsg.setFooter("Built by Stinggyray#1000", "https://images.emojiterra.com/twitter/v12/512px/1f914.png");
-		helpMsg.addField("Core Commands",
+		helpMsg.addField("**Bot Usage**", """
+						The sites this bot supports are:
+						[Wholesome Hentai God List](https://wholesomelist.com) (accepted formats: #1234)
+						[nhentai](https://nhentai.net) (accepted formats: https://nhentai.net/g/258133, 258133)
+						[e-hentai/exhentai](https://e-hentai.org) (accepted formats: https://e[x/-]hentai.org/...)
+						
+						All core commands can be used with all of these sites.
+						Search commands are site-specific.
+						
+						Abbreviations can also be used to check info of a doujin.
+						Enclosing the numbers (#1234 for the god list or 123456 for nhentai)
+						in `[]` or `<>` is equivalent to the info command.
+						
+						This bot also works in DMs. Feel free to use it in DMs (the prefix is always `>` in DMs).
+						""", false);
+		helpMsg.addField("Config / Information Commands",
 				"""
-						All nhentai commands work with just numbers!
 						- help: Displays the help message
 						- botinfo: Displays information about the bot / useful links
+						- addhook: Registers this channel as a hook for the new doujin feed
+						- removehook: Unregisters this channel as a hook for the new doujin feed
+						- setprefix: Sets the prefix for this server""",
+				false);
+		helpMsg.addField("Core Commands",
+				"""
 						- tags [link]: Returns tags for a link
-						- getpage [link] [page]: Gets a page link for an nhentai doujin
 						- info [link]: Returns info about a doujin
 						- badtags/warningtags: Lists the tags you'll be warned about
 						""", false);
-		helpMsg.addField("Config Commands",
-				"""
-						- addhook: Registers this channel as a hook for the new doujin feed
-						- removehook: Unregisters this channel as a hook for the new doujin feed
-						- setprefix: Sets the prefix for this server
-						""",
-				false);
 		helpMsg.addField("Search Commands",
 				"""     
-						- random [flags]:
-						```
-						-e: include non-english results
-						-nbt: no bad tags allowed in results
-						-w: no non-wholesome tags allowed in results (more restrictive than -nbt)
-						-i: no incest/inseki
-						-ya / yu: no yaoi / yuri
-						```
+						- random: Returns a random doujin from the Wholesome Hentai God List.
 						- search [-n] [query]: Queries for up to 100 doujins, and returns the ones it finds without any non-wholesome and warning tags (>badtags)
 						- deepsearch [-n] [query]: Queries for up to 250 doujins instead of 100. Usually not necessary.
 						```
@@ -48,10 +53,11 @@ public class Help {
 						```
 						"""
 				, false);
-		helpMsg.addField("More Questions?",
+		helpMsg.addField("Questions / Suggestions",
 				"""
-					If you have more questions about the bot, check the FAQ [here](https://github.com/WholesomeGodList/h-bot).
-					""", false);
+						If you have more questions about the bot, check the FAQ [here](https://github.com/WholesomeGodList/h-bot).
+						If that doesn't resolve your question, or if you have a suggestion, [join our Discord](https://discord.com/invite/FQCR6qu) and I'll be happy to help.
+						""", false);
 		helpMsg.setTimestamp(Instant.now());
 
 		return helpMsg.build();
@@ -73,7 +79,7 @@ public class Help {
 				"""
 						**[The Wholesome Hentai God List](https://wholesomelist.com)**
 						**[Discord Server](https://discord.com/invite/FQCR6qu)**
-						**[GitHub Repo](https://github.com/WholesomeGodList/h-bot)**
+						**[GitHub Repository](https://github.com/WholesomeGodList/h-bot)**
 						**[Invite the bot](https://discordapp.com/api/oauth2/authorize?client_id=608816072057159713&permissions=93248&scope=bot)**
 						**[Our Patreon](https://patreon.com/WholesomeGodList)**
 						""", false);

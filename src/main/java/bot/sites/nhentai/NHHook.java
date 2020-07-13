@@ -75,8 +75,11 @@ public class NHHook implements Runnable {
 					filteredDoujins.add(fetcher);
 					logger.info("Link found: " + cur);
 				}
+			} catch (HttpStatusException e) {
+				logger.debug("Exception occurred in HTTP status connection. This is probably fine, as it is most likely a 404.");
+				logger.debug(e.getUrl());
 			} catch (Exception e) {
-				logger.info("Exception occurred in checking an NHFetcher:!");
+				logger.info("Exception occurred in checking an NHFetcher!");
 				e.printStackTrace();
 			}
 		}
