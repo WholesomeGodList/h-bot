@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
@@ -300,5 +301,10 @@ public class Wiretap extends ListenerAdapter {
 				event.getReaction().removeReaction(event.getUser()).queue();
 			}
 		}
+	}
+
+	@Override
+	public void onMessageDelete(MessageDeleteEvent event) {
+		suspects.remove(event.getMessageId());
 	}
 }
