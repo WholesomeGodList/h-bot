@@ -71,7 +71,8 @@ public class NHHook implements Runnable {
 				NHFetcher fetcher = new NHFetcher(cur, database);
 				if (TagChecker.tagCheck(fetcher.getTags(), true).getLeft() == TagChecker.TagStatus.OK
 						&& fetcher.getLanguage().equals("English")
-						&& fetcher.getTags().size() >= 3) {
+						&& fetcher.getTags().size() >= 3
+						&& !fetcher.getTags().contains("webtoon")) {
 					filteredDoujins.add(fetcher);
 					logger.info("Link found: " + cur);
 				}
