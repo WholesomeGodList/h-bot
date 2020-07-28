@@ -11,7 +11,7 @@ public class TagList {
 	private static final HashSet<String> badTags = new HashSet<>(
 			Arrays.asList(
 					"netorare", "netori", "scat", "bestiality", "gigantic", "drugs", "blackmail", "horse", "fisting",
-					"vore", "guro", "nose hook", "urination", "blood", "cheating", "dog", "pig", "corruption", "mind control",
+					"vore", "guro", "nose hook", "blood", "cheating", "dog", "pig", "corruption", "mind control",
 					"vomit", "bbm", "cannibalism", "tentacles", "rape", "snuff", "moral degeneration", "mind break", "humiliation",
 					"chikan", "ryona", "piss drinking", "prostitution", "cum bath", "infantilism", "unbirth", "abortion",
 					"eye penetration", "urethra insertion", "chloroform", "parasite", "public use", "petrification", "necrophilia",
@@ -26,11 +26,11 @@ public class TagList {
 	private static final HashSet<String> unwholesomeTags = new HashSet<>(
 			Arrays.asList(
 					"amputee", "futanari", "gender bender", "human on furry", "group", "lactation", "femdom",
-					"ffm threesome", "double penetration", "gag", "harem", "collar", "strap-on", "inflation", "mmf threesome", "enema",
+					"ffm threesome", "double penetration", "gag", "harem", "strap-on", "inflation", "mmf threesome", "enema",
 					"bukkake", "bbw", "dick growth", "big areolae", "huge breasts", "slave", "gaping", "pegging",
 					"triple penetration", "prolapse", "human pet", "foot licking", "milking", "bondage", "multiple penises",
 					"asphyxiation", "stuck in wall", "human cattle", "clit growth", "ttf threesome", "phimosis", "glory hole",
-					"eggs", "incest"
+					"eggs", "incest", "urination"
 			)
 	);
 
