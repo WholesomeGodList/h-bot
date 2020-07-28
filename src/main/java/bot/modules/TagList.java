@@ -10,10 +10,10 @@ public class TagList {
 	 */
 	private static final HashSet<String> badTags = new HashSet<>(
 			Arrays.asList(
-					"netorare", "netori", "scat", "bestiality", "gigantic", "drugs", "blackmail", "horse", "fisting",
+					"netorare", "netori", "scat", "bestiality", "gigantic", "drugs", "blackmail", "horse",
 					"vore", "guro", "nose hook", "blood", "cheating", "dog", "pig", "corruption", "mind control",
 					"vomit", "bbm", "cannibalism", "tentacles", "rape", "snuff", "moral degeneration", "mind break", "humiliation",
-					"chikan", "ryona", "piss drinking", "prostitution", "cum bath", "infantilism", "unbirth", "abortion",
+					"chikan", "ryona",  "cum bath", "infantilism", "unbirth", "abortion",
 					"eye penetration", "urethra insertion", "chloroform", "parasite", "public use", "petrification", "necrophilia",
 					"brain fuck", "daughter", "torture", "birth"
 			)
@@ -30,7 +30,7 @@ public class TagList {
 					"bukkake", "bbw", "dick growth", "big areolae", "huge breasts", "slave", "gaping", "pegging",
 					"triple penetration", "prolapse", "human pet", "foot licking", "milking", "bondage", "multiple penises",
 					"asphyxiation", "stuck in wall", "human cattle", "clit growth", "ttf threesome", "phimosis", "glory hole",
-					"eggs", "incest", "urination"
+					"eggs", "incest", "urination", "prostitution", "fisting", "piss drinking"
 			)
 	);
 
