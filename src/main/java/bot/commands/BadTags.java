@@ -38,12 +38,23 @@ public class BadTags {
 		return badTagEmbed.build();
 	}
 
+	/**
+	 * Adds the three tag fields to the message embed.
+	 * @param badTagEmbed The embed to add the fields to.
+	 * @param fields An ImmutableTriple representing the field data.
+	 * @param name The name of the fields.
+	 */
 	private static void addTagFields(EmbedBuilder badTagEmbed, ImmutableTriple<String, String, String> fields, String name) {
 		badTagEmbed.addField(name, fields.getLeft(), true);
 		badTagEmbed.addField(" ", fields.getMiddle(), true);
 		badTagEmbed.addField(" ", fields.getRight(), true);
 	}
 
+	/**
+	 * Partitions a HashSet with length 3 into 3 strings, each made up of 1/3 of the original length.
+	 * @param tags The tags to partition.
+	 * @return An ImmutableTriple holding 3 strings, each holding 1/3 of the original tags.
+	 */
 	private static ImmutableTriple<String, String, String> tripartition(HashSet<String> tags) {
 		ArrayList<String> list = new ArrayList<>(tags);
 		Collections.sort(list);
