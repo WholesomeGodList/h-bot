@@ -88,7 +88,6 @@ public class EHFetcher implements SiteFetcher {
 			galleryId = Integer.parseInt(galleryMatcher.group(1));
 			galleryToken = galleryMatcher.group(2);
 		} else if (pageMatcher.find()){
-			//TODO: Make this also handled in EHApiHandler if the bot gets too large and people really like asking about pages
 			String pageId = pageMatcher.group(1);
 			galleryId = Integer.parseInt(pageMatcher.group(2));
 			int pageNum = Integer.parseInt(pageMatcher.group(3));
