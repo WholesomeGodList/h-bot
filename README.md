@@ -3,6 +3,7 @@
 [![GPLv3 license](https://img.shields.io/github/license/WholesomeGodList/h-bot)](http://perso.crans.org/besson/LICENSE.html)
 [![Releases](https://img.shields.io/github/v/release/WholesomeGodList/h-bot)](https://github.com/WholesomeGodList/h-bot-old/releases)
 ![build](https://github.com/WholesomeGodList/h-bot/workflows/Gradle%20CI/badge.svg)
+[![CodeFactor](https://www.codefactor.io/repository/github/wholesomegodlist/h-bot/badge)](https://www.codefactor.io/repository/github/wholesomegodlist/h-bot)
 
 # Public Invite Link
 
