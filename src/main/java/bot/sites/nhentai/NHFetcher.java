@@ -82,8 +82,8 @@ public class NHFetcher implements SiteFetcher {
 		// Oh boy, parsing time.
 		Pattern titleRegex = Pattern.compile(
 				"^(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*" +
-						"(?:[^\\[|\\](){}<>=]*\\s*\\|\\s*)?([^\\[|\\](){}<>=]*?)" +
-						"(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*$"
+				"(?:[^\\[|\\](){}<>=]*\\s*\\|\\s*)?([^\\[|\\](){}<>=]*?)" +
+				"(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*$"
 		);
 
 		String title = doc.select("h1.title").first() == null ? "None" : doc.select("h1.title").first().text().trim();
