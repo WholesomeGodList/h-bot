@@ -1,7 +1,7 @@
 package bot.modules;
 
-import java.util.HashSet;
 import java.util.Arrays;
+import java.util.HashSet;
 
 public class TagList {
 	/**
@@ -13,7 +13,7 @@ public class TagList {
 					"netorare", "netori", "scat", "bestiality", "gigantic", "drugs", "blackmail", "horse",
 					"vore", "guro", "nose hook", "blood", "cheating", "dog", "pig", "corruption", "mind control",
 					"vomit", "bbm", "cannibalism", "tentacles", "rape", "snuff", "moral degeneration", "mind break", "humiliation",
-					"chikan", "ryona",  "cum bath", "infantilism", "unbirth", "abortion",
+					"chikan", "ryona", "cum bath", "infantilism", "unbirth", "abortion",
 					"eye penetration", "urethra insertion", "chloroform", "parasite", "public use", "petrification", "necrophilia",
 					"brain fuck", "daughter", "torture", "birth"
 			)
@@ -47,6 +47,7 @@ public class TagList {
 
 	/**
 	 * Returns a copy of the illegal tags.
+	 *
 	 * @return The illegal tags.
 	 */
 	public static HashSet<String> getIllegalTags() {
@@ -55,6 +56,7 @@ public class TagList {
 
 	/**
 	 * Returns a copy of the bad tags.
+	 *
 	 * @return The bad tags.
 	 */
 	public static HashSet<String> getBadTags() {
@@ -63,6 +65,7 @@ public class TagList {
 
 	/**
 	 * Returns a copy of the unwholesome tags.
+	 *
 	 * @return The unwholesome tags.
 	 */
 	public static HashSet<String> getUnwholesomeTags() {
@@ -72,6 +75,7 @@ public class TagList {
 	/**
 	 * Returns a copy of the unwholesome tags, WITHOUT any tags contained
 	 * within the query.
+	 *
 	 * @param query The query to be excluded from the tag list.
 	 * @return The tag list without tags contained in the query.
 	 */

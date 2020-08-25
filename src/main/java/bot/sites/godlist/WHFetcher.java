@@ -62,7 +62,7 @@ public class WHFetcher {
 		JSONArray tagArray = entry.getJSONArray("tags");
 		tags = new HashSet<>();
 
-		for(int i = 0; i < tagArray.length(); i++) {
+		for (int i = 0; i < tagArray.length(); i++) {
 			tags.add(tagArray.getString(i));
 		}
 	}
@@ -78,7 +78,7 @@ public class WHFetcher {
 
 	private static JSONObject getCachedTable() throws IOException {
 		// If the cache is null or older than 10 minutes, update it
-		if(cachedTable == null || lastCached < (Instant.now().getEpochSecond() - 600)) {
+		if (cachedTable == null || lastCached < (Instant.now().getEpochSecond() - 600)) {
 			cachedTable = WHApiRequest();
 			lastCached = Instant.now().getEpochSecond();
 		}

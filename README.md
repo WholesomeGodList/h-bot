@@ -5,11 +5,11 @@
 ![build](https://github.com/WholesomeGodList/h-bot/workflows/Gradle%20CI/badge.svg)
 [![CodeFactor](https://www.codefactor.io/repository/github/wholesomegodlist/h-bot/badge)](https://www.codefactor.io/repository/github/wholesomegodlist/h-bot)
 
-# Public Invite Link
+## Public Invite Link
 
-## **[Invite this bot to your server!](https://discord.com/api/oauth2/authorize?client_id=608816072057159713&permissions=93248&scope=bot)**
+### **[Invite this bot to your server!](https://discord.com/api/oauth2/authorize?client_id=608816072057159713&permissions=93248&scope=bot)**
 
-# Bot Information
+## Bot Information
 
 **The bot has been completely rewritten to allow scalability.**
 
@@ -19,7 +19,7 @@ Discord bot built using the wonderful [JDA library](https://github.com/DV8FromTh
 
 - nhentai
 - e-hentai/exhentai
-- Wholesome Hentai God List (https://wholesomelist.com)
+- Wholesome Hentai God List (<https://wholesomelist.com>)
 
 Focused on features that find wholesome, vanilla doujins (we are a vanilla server after all), and warns about any potentially objectionable tags.
 
@@ -29,11 +29,11 @@ Join our Discord for support and vanilla doujins!
 [discord-shield]: https://discordapp.com/api/guilds/624457027095363594/widget.png
 [ ![discord-shield][] ][discord-invite]
 
-# Contributing
+## Contributing
 Go ahead and contribute if you'd like. I'll review it and probably merge it. If you need documentation, just join the Discord and ask me what anything does.
 This rewrite is mostly documented, but any questions are still welcome.
 
-# Functionality
+## Functionality
 As I've stated, this bot has a *focus on wholesomeness*. This means that it will warn you about things like netorare, and will also have a suite of wholesomeness-focused commands and utilities. As for the functionality,
 H-Bot comes equipped with a lot of commands, plus a bootleg webhook for nhentai. It also conforms with Discord's terms of service by blocking any doujins with the lolicon or shotacon tags (and notably, also the `oppai loli` tag).
 
@@ -47,7 +47,7 @@ Commands to set it up:
 - addhook - Registers the channel as a webhook channel (not shown in help, requires Manage Server permission)
 - removehook - Unregisters the channel as a webhook channel (not shown in help, requires Manage Server permission)
 
-# Dependencies (These are built into the jar already)
+## Dependencies (These are built into the jar already)
 - [JDA](https://github.com/DV8FromTheWorld/JDA)
 - [Log4j2](https://logging.apache.org/log4j/2.x/)
 - [Jsoup](https://jsoup.org/)
@@ -57,7 +57,7 @@ Commands to set it up:
 - [Apache Commons Text](https://commons.apache.org/proper/commons-text/)
 - [Apache Commons HttpComponents](https://hc.apache.org/)
 
-# Setup
+## Setup
 If you would like to self-host this bot for your own servers instead of using my invite link, you're going to need a few steps.
 
 ### Create the Discord bot

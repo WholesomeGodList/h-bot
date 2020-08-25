@@ -32,7 +32,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class EHApiHandler {
 	/**
 	 * A simple wrapper class for the JSON payloads used in the e-hentai API for gallery information retrieval.
-	 *
+	 * <p>
 	 * The JSON formats are as follows:
 	 * <h1>Payload:</h1>
 	 * <pre> {@code
@@ -69,7 +69,8 @@ public class EHApiHandler {
 
 		/**
 		 * Adds an entry to the payload.
-		 * @param galleryId The gallery ID of the entry.
+		 *
+		 * @param galleryId    The gallery ID of the entry.
 		 * @param galleryToken The gallery token of the entry.
 		 */
 		public void addEntry(int galleryId, String galleryToken) {
@@ -112,7 +113,7 @@ public class EHApiHandler {
 
 	/**
 	 * A simple wrapper class for the JSON payloads used in the e-hentai API for gallery token retrieval from a page link.
-	 *
+	 * <p>
 	 * The JSON formats are as follows:
 	 * <h1>Payload:</h1>
 	 * <pre> {@code
@@ -149,9 +150,10 @@ public class EHApiHandler {
 
 		/**
 		 * Adds an entry to the payload.
+		 *
 		 * @param galleryId The gallery ID of the entry.
-		 * @param pageId The ID of the page.
-		 * @param pageNum The page number.
+		 * @param pageId    The ID of the page.
+		 * @param pageNum   The page number.
 		 */
 		public void addEntry(int galleryId, String pageId, int pageNum) {
 			JSONArray entry = new JSONArray();
@@ -214,7 +216,6 @@ public class EHApiHandler {
 
 	/**
 	 * Packages EHFetcher queries in bits of 25 at a time to minimalize traffic/bandwidth. Avoids the E-Hentai rate limit.
-	 *
 	 */
 	public void runGalleryQuery() {
 		logger.info("Now compiling the current gallery queries...");
@@ -231,7 +232,7 @@ public class EHApiHandler {
 		ArrayList<Pair<EHFetcher, CompletableFuture<JSONObject>>> curQueries = new ArrayList<>(queries.subList(0, maxSize));
 		queries.subList(0, maxSize).clear();
 
-		if(!queries.isEmpty()) {
+		if (!queries.isEmpty()) {
 			// If there are still queries to be run, run another query afterwards
 			logger.info("There are still queries remaining. Running gallery queries again.");
 			setSleeping(true);
@@ -259,23 +260,23 @@ public class EHApiHandler {
 			JSONArray gmetas = response.getJSONArray("gmetadata");
 
 			//Iterate through response data and resolve them individually
-			for(int i = 0; i < gmetas.length(); i++) {
+			for (int i = 0; i < gmetas.length(); i++) {
 				JSONObject curResponse = gmetas.getJSONObject(i);
 
 				if (curResponse.has("error")) {
 					// There's an error.
 					logger.info("An error happened in the payload: " + curResponse.getString("error"));
 
-					for(Pair<EHFetcher, CompletableFuture<JSONObject>> cur : curQueries) {
-						if(cur.getLeft().getGalleryId() == curResponse.getInt("gid")) {
+					for (Pair<EHFetcher, CompletableFuture<JSONObject>> cur : curQueries) {
+						if (cur.getLeft().getGalleryId() == curResponse.getInt("gid")) {
 							cur.getRight().completeExceptionally(new NotFoundException(curResponse.getString("error")));
 						}
 					}
 				}
 				String curGalleryToken = curResponse.getString("token");
 
-				for(Pair<EHFetcher, CompletableFuture<JSONObject>> cur : curQueries) {
-					if(cur.getLeft().getGalleryToken().equals(curGalleryToken)) {
+				for (Pair<EHFetcher, CompletableFuture<JSONObject>> cur : curQueries) {
+					if (cur.getLeft().getGalleryToken().equals(curGalleryToken)) {
 						cur.getRight().complete(curResponse);
 					}
 				}
@@ -283,7 +284,7 @@ public class EHApiHandler {
 		} catch (Exception e) {
 			e.printStackTrace();
 
-			for(Pair<EHFetcher, CompletableFuture<JSONObject>> cur : curQueries) {
+			for (Pair<EHFetcher, CompletableFuture<JSONObject>> cur : curQueries) {
 				cur.getRight().completeExceptionally(e);
 			}
 		}
@@ -291,6 +292,7 @@ public class EHApiHandler {
 
 	/**
 	 * Submits a query to the E-Hentai API for information about a doujin.
+	 *
 	 * @param data An EHFetcher containing a Gallery ID and Gallery Token (that will be used to submit the query).
 	 * @return A CompletableFuture object that will resolve with the data from E-Hentai.
 	 */
@@ -298,7 +300,7 @@ public class EHApiHandler {
 		CompletableFuture<JSONObject> promise = new CompletableFuture<>();
 		queries.add(new ImmutablePair<>(data, promise));
 
-		if(!sleeping) {
+		if (!sleeping) {
 			setSleeping(true);
 			startGalleryQuery();
 		}
@@ -316,6 +318,7 @@ public class EHApiHandler {
 
 	/**
 	 * Sends a basic request.
+	 *
 	 * @param payload
 	 * @return
 	 * @throws IOException
@@ -327,6 +330,7 @@ public class EHApiHandler {
 
 	/**
 	 * Sends a basic request using a specific HttpClient.
+	 *
 	 * @param payload
 	 * @param connect
 	 * @return

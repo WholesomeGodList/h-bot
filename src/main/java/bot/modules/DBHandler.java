@@ -33,11 +33,11 @@ public class DBHandler {
 		//Creating database for command configs for each server
 		File configFile = new File("./config.db");
 		String configUrl = "jdbc:sqlite:config.db";
-		if(!configFile.exists()) {
+		if (!configFile.exists()) {
 			logger.info("Config database not found. Creating a new database...");
 			try {
 				connectionConfig = DriverManager.getConnection(configUrl);
-				if(connectionConfig != null) {
+				if (connectionConfig != null) {
 					logger.info("Config database created.");
 					logger.info("Now running setup commands...");
 
@@ -59,7 +59,7 @@ public class DBHandler {
 			config.setMaxTotal(15);
 
 			Connection conn = config.getConnection();
-			if(conn != null) {
+			if (conn != null) {
 				logger.info("Connected to config database.");
 				conn.close();
 			}
@@ -73,11 +73,11 @@ public class DBHandler {
 		//Creating database for caching website data.
 		File cacheFile = new File("./cache.db");
 		String cacheUrl = "jdbc:sqlite:cache.db";
-		if(!cacheFile.exists()) {
+		if (!cacheFile.exists()) {
 			logger.info("Config database not found. Creating a new database...");
 			try {
 				cacheConn = DriverManager.getConnection(cacheUrl);
-				if(cacheConn != null) {
+				if (cacheConn != null) {
 					logger.info("Cache database created.");
 					logger.info("Now running setup commands...");
 					Statement create = cacheConn.createStatement();
@@ -87,7 +87,7 @@ public class DBHandler {
 							" gallery_token text, title text, title_japanese text, language text, category text," +
 							"pages integer, uploader text, thumb text, rating real, timeposted integer)");
 
-					create.execute( "CREATE TABLE nhentai (url text, timecached integer, title text," +
+					create.execute("CREATE TABLE nhentai (url text, timecached integer, title text," +
 							"title_japanese text, language text, pages integer," +
 							" thumb text, favorites integer, timeposted integer)");
 
@@ -133,6 +133,7 @@ public class DBHandler {
 	/**
 	 * Gets the prefix for a guild.
 	 * Internally caches prefixes in memory to prevent excessive SQL queries.
+	 *
 	 * @param guildId The ID of the guild to which the get the prefix of.
 	 * @return The prefix of the guild.
 	 */
@@ -212,7 +213,7 @@ public class DBHandler {
 			ArrayList<TextChannel> results = new ArrayList<>();
 			while (rs.next()) {
 				Guild curGuild = jda.getGuildById(rs.getString(1));
-				if(curGuild == null) {
+				if (curGuild == null) {
 					continue;
 				}
 				results.add(curGuild.getTextChannelById(rs.getString(2)));
@@ -229,8 +230,9 @@ public class DBHandler {
 	/**
 	 * Looks for a cached version of EHFetcher in the database. If there is one, it is used to populate all the fields
 	 * of the passed EHFetcher object.
-	 *
+	 * <p>
 	 * If the cached version is too old (older than 2 weeks) it is thrown out and not used.
+	 *
 	 * @param load An EHFetcher object with which to load the cache into.
 	 * @return Whether this value was found in the cache or not.
 	 */
@@ -242,9 +244,9 @@ public class DBHandler {
 			ResultSet rs = guillotine.executeQuery();
 			//execute the nobles
 
-			if(rs.next()) {
+			if (rs.next()) {
 				// If the entry is older than 14 days...
-				if(rs.getLong("timecached") < (Instant.now().getEpochSecond() - (86400 * 14))) {
+				if (rs.getLong("timecached") < (Instant.now().getEpochSecond() - (86400 * 14))) {
 
 					PreparedStatement coronavirus = cacheConn.prepareStatement("DELETE FROM ehentai WHERE url=?");
 					//Execute the old queries!
@@ -286,8 +288,7 @@ public class DBHandler {
 				load.setFemaleTags(loadSetFromTable("ehfemaletags", url, cacheConn));
 				load.setMiscTags(loadSetFromTable("ehmisctags", url, cacheConn));
 				return true;
-			}
-			else {
+			} else {
 				// It's not in the cache.
 				return false;
 			}
@@ -301,8 +302,9 @@ public class DBHandler {
 	/**
 	 * Looks for a cached version of NHFetcher in the database. If there is one, it is used to populate all the fields
 	 * of the passed NHFetcher object.
-	 *
+	 * <p>
 	 * If the cached version is too old (older than 2 weeks) it is thrown out and not used.
+	 *
 	 * @param load An NHFetcher object with which to load the cache into.
 	 * @return Whether this value was found in the cache or not.
 	 */
@@ -314,9 +316,9 @@ public class DBHandler {
 			ResultSet rs = guillotine.executeQuery();
 			//execute the nobles!
 
-			if(rs.next()) {
+			if (rs.next()) {
 				// If the entry is older than 14 days...
-				if(rs.getLong("timecached") < (Instant.now().getEpochSecond() - (86400 * 14))) {
+				if (rs.getLong("timecached") < (Instant.now().getEpochSecond() - (86400 * 14))) {
 					PreparedStatement coronavirus = cacheConn.prepareStatement("DELETE FROM nhentai WHERE url=?");
 					//execute the old queries!
 					coronavirus.setString(1, load.getUrl());
@@ -347,8 +349,7 @@ public class DBHandler {
 				load.setChars(loadSetFromTable("nhchars", url, cacheConn));
 				load.setTags(loadSetFromTable("nhtags", url, cacheConn));
 				return true;
-			}
-			else {
+			} else {
 				// It's not in the cache.
 				return false;
 			}
@@ -361,6 +362,7 @@ public class DBHandler {
 
 	/**
 	 * Caches the data currently inside the passed EHFetcher to internal storage.
+	 *
 	 * @param data The EHFetcher with data to be cached.
 	 */
 	public void cache(EHFetcher data) {
@@ -384,16 +386,16 @@ public class DBHandler {
 			stmt.setLong(13, data.getTimePosted().getEpochSecond());
 
 			stmt.execute(); //jesus christ
-			
+
 			String url = data.getUrl();
 
-			insertSetIntoTable(data.getArtists(),"ehartists", url, cacheConn);
-			insertSetIntoTable(data.getGroups(),"ehgroups", url, cacheConn);
-			insertSetIntoTable(data.getParodies(),"ehparodies", url, cacheConn);
-			insertSetIntoTable(data.getChars(),"ehchars", url, cacheConn);
-			insertSetIntoTable(data.getMaleTags(),"ehmaletags", url, cacheConn);
-			insertSetIntoTable(data.getFemaleTags(),"ehfemaletags", url, cacheConn);
-			insertSetIntoTable(data.getMiscTags(),"ehmisctags", url, cacheConn);
+			insertSetIntoTable(data.getArtists(), "ehartists", url, cacheConn);
+			insertSetIntoTable(data.getGroups(), "ehgroups", url, cacheConn);
+			insertSetIntoTable(data.getParodies(), "ehparodies", url, cacheConn);
+			insertSetIntoTable(data.getChars(), "ehchars", url, cacheConn);
+			insertSetIntoTable(data.getMaleTags(), "ehmaletags", url, cacheConn);
+			insertSetIntoTable(data.getFemaleTags(), "ehfemaletags", url, cacheConn);
+			insertSetIntoTable(data.getMiscTags(), "ehmisctags", url, cacheConn);
 
 			logger.debug("Caching completed.");
 		} catch (SQLException e) {
@@ -404,6 +406,7 @@ public class DBHandler {
 
 	/**
 	 * Caches the data currently inside the passed NHFetcher to internal storage.
+	 *
 	 * @param data The NHFetcher with data to be cached.
 	 */
 	public void cache(NHFetcher data) {
@@ -426,11 +429,11 @@ public class DBHandler {
 
 			String url = data.getUrl();
 
-			insertSetIntoTable(data.getArtists(),"nhartists", url, cacheConn);
-			insertSetIntoTable(data.getGroups(),"nhgroups", url, cacheConn);
-			insertSetIntoTable(data.getParodies(),"nhparodies", url, cacheConn);
-			insertSetIntoTable(data.getChars(),"nhchars", url, cacheConn);
-			insertSetIntoTable(data.getTags(),"nhtags", url, cacheConn);
+			insertSetIntoTable(data.getArtists(), "nhartists", url, cacheConn);
+			insertSetIntoTable(data.getGroups(), "nhgroups", url, cacheConn);
+			insertSetIntoTable(data.getParodies(), "nhparodies", url, cacheConn);
+			insertSetIntoTable(data.getChars(), "nhchars", url, cacheConn);
+			insertSetIntoTable(data.getTags(), "nhtags", url, cacheConn);
 
 			logger.debug("Caching completed.");
 		} catch (SQLException e) {
@@ -446,7 +449,7 @@ public class DBHandler {
 		ResultSet rs = stmt.executeQuery();
 
 		HashSet<String> results = new HashSet<>();
-		while(rs.next()) {
+		while (rs.next()) {
 			results.add(rs.getString(2));
 		}
 		stmt.close();
@@ -456,7 +459,7 @@ public class DBHandler {
 	private void insertSetIntoTable(HashSet<String> tags, String tableName, String url, Connection conn) throws SQLException {
 		//bobby cant touch tableName so we're good
 		PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + tableName + " VALUES (?, ?)");
-		for(String curTag : tags) {
+		for (String curTag : tags) {
 			stmt.setString(1, url);
 			stmt.setString(2, curTag);
 			stmt.addBatch();

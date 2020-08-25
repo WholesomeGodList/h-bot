@@ -20,9 +20,11 @@ public class Validator {
 		VALID(true);
 
 		private final boolean valid;
+
 		ArgType(final boolean valid) {
 			this.valid = valid;
 		}
+
 		public boolean isValid() {
 			return valid;
 		}
@@ -46,6 +48,7 @@ public class Validator {
 
 	/**
 	 * Checks if a given query is a command.
+	 *
 	 * @param query The query to be checked.
 	 * @return If the query is a command or not.
 	 */
@@ -55,14 +58,15 @@ public class Validator {
 
 	/**
 	 * Validates an argument using a passed array of regexes,
-	 * @param args The arguments provided in the command.
+	 *
+	 * @param args     The arguments provided in the command.
 	 * @param argCount The number of arguments that should be present.
-	 * @param regexes The regexes that the arguments should match at least one of.
-	 * @param channel The message channel to send validation failure messages to.
+	 * @param regexes  The regexes that the arguments should match at least one of.
+	 * @param channel  The message channel to send validation failure messages to.
 	 * @return An ArgType representing whether the argument was valid or not.
 	 */
 	public static ArgType validate(String args, int argCount, Pattern[] regexes, MessageChannel channel) {
-		if(args == null || args.split(" ").length < argCount) {
+		if (args == null || args.split(" ").length < argCount) {
 			channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "Please supply a link or numbers!")).queue();
 			return ArgType.INVALID;
 		}
@@ -73,14 +77,14 @@ public class Validator {
 		}
 
 		boolean matches = false;
-		for(Pattern cur : regexes) {
+		for (Pattern cur : regexes) {
 			Matcher curMatcher = cur.matcher(args);
-			if(curMatcher.find()) {
+			if (curMatcher.find()) {
 				matches = true;
 			}
 		}
 
-		if(!matches) {
+		if (!matches) {
 			channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "Please supply a link or numbers!")).queue();
 			return ArgType.INVALID;
 		}
@@ -89,6 +93,7 @@ public class Validator {
 
 	/**
 	 * Gets the corresponding ArgType of a URL.
+	 *
 	 * @param url The URL to get the ArgType of.
 	 * @return The corresponding ArgType of the URL. If no matching ArgType is found, this returns ArgType.INVALID.
 	 */
@@ -99,19 +104,19 @@ public class Validator {
 		Pattern godList = Pattern.compile("#\\d{1,4}");
 
 		Matcher nhGalleryMatcher = nhGallery.matcher(url);
-		if(nhGalleryMatcher.find()) {
+		if (nhGalleryMatcher.find()) {
 			return ArgType.NHENTAI;
 		}
 		Matcher ehGalleryMatcher = ehGallery.matcher(url);
-		if(ehGalleryMatcher.find()) {
+		if (ehGalleryMatcher.find()) {
 			return ArgType.EHENTAI;
 		}
 		Matcher ehPageMatcher = ehPage.matcher(url);
-		if(ehPageMatcher.find()) {
+		if (ehPageMatcher.find()) {
 			return ArgType.EHENTAI;
 		}
 		Matcher godListMatcher = godList.matcher(url);
-		if(godListMatcher.find()) {
+		if (godListMatcher.find()) {
 			return ArgType.GODLIST;
 		}
 
@@ -129,9 +134,10 @@ public class Validator {
 
 	/**
 	 * Validates an argument for a specific site.
-	 * @param args The arguments provided in the command.
+	 *
+	 * @param args     The arguments provided in the command.
 	 * @param argCount The number of arguments that should be present.
-	 * @param channel The message channel to send validation failure messages to.
+	 * @param channel  The message channel to send validation failure messages to.
 	 * @return An ArgType representing what the site of the argument is.
 	 */
 	public static ArgType siteValidate(String args, int argCount, MessageChannel channel) {
@@ -140,7 +146,7 @@ public class Validator {
 		Pattern nhGallery = Pattern.compile("https?://nhentai\\.net/g/\\d{1,6}/?");
 		Pattern godList = Pattern.compile("#\\d{1,4}");
 
-		if(!validate(args, argCount, new Pattern[]{ehPage, ehGallery, nhGallery, godList}, channel).isValid()) {
+		if (!validate(args, argCount, new Pattern[]{ehPage, ehGallery, nhGallery, godList}, channel).isValid()) {
 			return ArgType.INVALID;
 		}
 

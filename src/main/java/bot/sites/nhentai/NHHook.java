@@ -97,8 +97,7 @@ public class NHHook implements Runnable {
 									success.addReaction("U+2B07").queue();
 								}
 						);
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						logger.info("Probably failed to send something. Skipping this channel...");
 					}
 				}

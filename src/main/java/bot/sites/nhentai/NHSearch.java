@@ -38,7 +38,7 @@ public class NHSearch {
 
 		logger.info("Search URL: " + urlQuery);
 
-		if(TagList.getIllegalTags().contains(query)) {
+		if (TagList.getIllegalTags().contains(query)) {
 			channel.sendMessage("***FBI OPEN UP***").queue();
 			return;
 		}
@@ -55,14 +55,14 @@ public class NHSearch {
 				logger.info("Current page: " + (currentPage));
 
 				Document doc = Jsoup.connect(curUrlQuery).get();
-				
+
 				ArrayList<String> curResults = doc.select("a[href]").stream().map(n -> n.attr("abs:href"))
 						.map(gallery::matcher).filter(Matcher::find)
 						.map(s -> "https://nhentai.net/g/" + s.group(1) + "/")
 						.collect(Collectors.toCollection(ArrayList::new));
 
 				// If no new results were found, we stop here
-				if(curResults.size() == 0) {
+				if (curResults.isEmpty()) {
 					break;
 				}
 
@@ -78,11 +78,10 @@ public class NHSearch {
 		// We have actually already filtered out everything using the search URL
 
 		// At this point, allResults is our final search results. Start returning the results.
-		if(allResults.isEmpty()) {
+		if (allResults.isEmpty()) {
 			MessageEmbed noResultsAlert = EmbedGenerator.createAlertEmbed("Search Results", "No results found!");
 			channel.sendMessage(noResultsAlert).queue();
-		}
-		else if(allResults.size() == 1) {
+		} else if (allResults.size() == 1) {
 			// There's only one result, send an info embed for it.
 			try {
 				channel.sendMessage(Info.getDoujinInfoEmbed(new NHFetcher(allResults.get(0), database))).queue();
@@ -90,22 +89,19 @@ public class NHSearch {
 				logger.info("Something went wrong when making the search info embed.");
 				e.printStackTrace();
 			}
-		}
-		else if(allResults.size() <= 10) {
+		} else if (allResults.size() <= 10) {
 			// Relatively small link pile, send it in the chat
 			channel.sendMessage(EmbedGenerator.createAlertEmbed("Search Results", "Results found: " + allResults.size())).queue();
 			channel.sendMessage("Full results:\n" +
 					allResults.stream().map(str -> "<" + str + ">").collect(Collectors.joining("\n"))).queue();
-		}
-		else {
+		} else {
 			// Big link pile, send it in DMs
-			if(channel.getType() == ChannelType.TEXT) {
+			if (channel.getType() == ChannelType.TEXT) {
 				channel.sendMessage(EmbedGenerator.createAlertEmbed("Search Results", "More than 10 results - sending the results to your DMs!")).complete();
 				author.openPrivateChannel().queue(
 						pm -> sendResults(pm, allResults, fquery)
 				);
-			}
-			else {
+			} else {
 				sendResults(channel, allResults, fquery);
 			}
 		}
@@ -127,7 +123,7 @@ public class NHSearch {
 		}
 
 
-		if(channel.getType() == ChannelType.PRIVATE) {
+		if (channel.getType() == ChannelType.PRIVATE) {
 			PrivateChannel pm = (PrivateChannel) channel;
 			pm.sendMessage(current.toString()).queue(
 					success -> pm.close().queue()
@@ -139,7 +135,7 @@ public class NHSearch {
 
 	private static String generateUrl(String query, boolean restrict) {
 		HashSet<String> allTags = TagList.getBadTags();
-		if(restrict) {
+		if (restrict) {
 			allTags.addAll(TagList.nonWholesomeTagsWithoutQuery(query));
 		}
 		allTags.addAll(TagList.getIllegalTags());

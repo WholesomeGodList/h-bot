@@ -42,7 +42,7 @@ public class EHSearch {
 		query = query.trim();
 		String urlQuery = generateUrl(query);
 
-		if(TagList.getIllegalTags().contains(query)) {
+		if (TagList.getIllegalTags().contains(query)) {
 			channel.sendMessage("***FBI OPEN UP***").queue();
 			return;
 		}
@@ -68,7 +68,7 @@ public class EHSearch {
 						.forEachOrdered(m -> queries.add(new ImmutablePair<>(Integer.parseInt(m.group(1)), m.group(2))));
 
 				// If no new results were found, we stop here
-				if(queries.isEmpty()) {
+				if (queries.isEmpty()) {
 					break;
 				}
 
@@ -86,7 +86,7 @@ public class EHSearch {
 				JSONArray metadatas = data.getJSONArray("gmetadata");
 				ArrayList<EHFetcher> tempResults = new ArrayList<>();
 
-				for(int i = 0; i < metadatas.length(); i++) {
+				for (int i = 0; i < metadatas.length(); i++) {
 					tempResults.add(new EHFetcher(metadatas.getJSONObject(i), database));
 				}
 
@@ -104,29 +104,25 @@ public class EHSearch {
 		}
 
 		// At this point, fetchers is our final search results. Start returning the results.
-		if(fetchers.isEmpty()) {
+		if (fetchers.isEmpty()) {
 			MessageEmbed noResultsAlert = EmbedGenerator.createAlertEmbed("Search Results", "No results found!");
 			channel.sendMessage(noResultsAlert).queue();
-		}
-		else if(fetchers.size() == 1) {
+		} else if (fetchers.size() == 1) {
 			// There's only one result, send an info embed for it.
 			channel.sendMessage(Info.getDoujinInfoEmbed(fetchers.get(0))).queue();
-		}
-		else if(fetchers.size() <= 10) {
+		} else if (fetchers.size() <= 10) {
 			// Relatively small link pile, send it in the chat
 			channel.sendMessage(EmbedGenerator.createAlertEmbed("Search Results", "Results found: " + fetchers.size())).queue();
 			channel.sendMessage("Full results:\n" +
 					fetchers.stream().map(fetcher -> "<" + fetcher.getUrl() + ">").collect(Collectors.joining("\n"))).queue();
-		}
-		else {
+		} else {
 			// Big link pile, send it in DMs
-			if(channel.getType() == ChannelType.TEXT) {
+			if (channel.getType() == ChannelType.TEXT) {
 				channel.sendMessage(EmbedGenerator.createAlertEmbed("Search Results", "More than 10 results - sending the results to your DMs!")).complete();
 				author.openPrivateChannel().queue(
 						pm -> sendResults(pm, fetchers, fquery)
 				);
-			}
-			else {
+			} else {
 				channel.sendMessage(EmbedGenerator.createAlertEmbed("Search Results", "Results found: " + fetchers.size())).queue();
 				sendResults(channel, fetchers, fquery);
 			}
@@ -160,7 +156,7 @@ public class EHSearch {
 			}
 		}
 
-		if(channel.getType() == ChannelType.PRIVATE) {
+		if (channel.getType() == ChannelType.PRIVATE) {
 			PrivateChannel pm = (PrivateChannel) channel;
 			pm.sendMessage(current.toString()).queue(
 					success -> pm.close().queue()

@@ -15,20 +15,20 @@ public class Help {
 		helpMsg.setTitle("For easily accessing info from nhentai and e-hentai");
 		helpMsg.setFooter("Built by Stinggyray#1000", "https://images.emojiterra.com/twitter/v12/512px/1f914.png");
 		helpMsg.addField("**Bot Usage**", """
-						The sites this bot supports are:
-						[Wholesome Hentai God List](https://wholesomelist.com) (accepted formats: #1234)
-						[nhentai](https://nhentai.net) (accepted formats: https://nhentai.net/g/258133, 258133)
-						[e-hentai/exhentai](https://e-hentai.org) (accepted formats: https://e[x/-]hentai.org/...)
-						
-						All core commands can be used with all of these sites.
-						Search commands are site-specific.
-						
-						Abbreviations can also be used to check info of a doujin.
-						Enclosing the numbers (#1234 for the god list or 123456 for nhentai)
-						in `[]` or `{}` is equivalent to the info command.
-						
-						This bot also works in DMs. Feel free to use it in DMs (the prefix is always `>` in DMs).
-						""", false);
+				The sites this bot supports are:
+				[Wholesome Hentai God List](https://wholesomelist.com) (accepted formats: #1234)
+				[nhentai](https://nhentai.net) (accepted formats: https://nhentai.net/g/258133, 258133)
+				[e-hentai/exhentai](https://e-hentai.org) (accepted formats: https://e[x/-]hentai.org/...)
+										
+				All core commands can be used with all of these sites.
+				Search commands are site-specific.
+										
+				Abbreviations can also be used to check info of a doujin.
+				Enclosing the numbers (#1234 for the god list or 123456 for nhentai)
+				in `[]` or `{}` is equivalent to the info command.
+										
+				This bot also works in DMs. Feel free to use it in DMs (the prefix is always `>` in DMs).
+				""", false);
 		helpMsg.addField("Config / Information Commands",
 				"""
 						- help: Displays the help message
@@ -58,7 +58,7 @@ public class Help {
 				, false);
 		helpMsg.addField("Questions / Suggestions",
 				"""
-                        If you're confused about the commands, the command syntax, and how to use them, a very in-depth guide is available [here](https://github.com/WholesomeGodList/h-bot/wiki/Commands).
+						                  If you're confused about the commands, the command syntax, and how to use them, a very in-depth guide is available [here](https://github.com/WholesomeGodList/h-bot/wiki/Commands).
 						If you have more questions about the bot, check the FAQ [here](https://github.com/WholesomeGodList/h-bot/wiki/FAQ).
 						If that doesn't resolve your question, or if you have a suggestion, [join our Discord](https://discord.com/invite/FQCR6qu) and I'll be happy to help.
 						""", false);

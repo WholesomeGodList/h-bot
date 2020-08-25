@@ -44,6 +44,7 @@ public class EHFetcher implements SiteFetcher {
 		PRIVATE("Private");
 
 		private final String name;
+
 		Category(String name) {
 			this.name = name;
 		}
@@ -55,8 +56,9 @@ public class EHFetcher implements SiteFetcher {
 
 	/**
 	 * Creates a new EHFetcher object and populates the fields with information.
-	 * @param url The e-hentai URL to fetch information about.
-	 * @param handler An EHApiHandler object to use to fetch the information from.
+	 *
+	 * @param url      The e-hentai URL to fetch information about.
+	 * @param handler  An EHApiHandler object to use to fetch the information from.
 	 * @param database A DBHandler object (to get the cache from). If null, caching will be disabled.
 	 * @throws IOException If something goes wrong with the fetching, an IOException is thrown.
 	 */
@@ -64,15 +66,15 @@ public class EHFetcher implements SiteFetcher {
 		logger.debug("Connecting to " + url);
 		// Handle URL
 		url = url.trim().replace("http://", "https://");
-		if(!url.endsWith("/")) {
+		if (!url.endsWith("/")) {
 			url += "/";
 		}
 
 		this.url = url;
 
-		if(database != null) {
+		if (database != null) {
 			boolean cached = database.loadFromCache(this);
-			if(cached) {
+			if (cached) {
 				// Found it in the caches (and the data has already been loaded). We can stop here.
 				return;
 			}
@@ -87,7 +89,7 @@ public class EHFetcher implements SiteFetcher {
 		if (galleryMatcher.find()) {
 			galleryId = Integer.parseInt(galleryMatcher.group(1));
 			galleryToken = galleryMatcher.group(2);
-		} else if (pageMatcher.find()){
+		} else if (pageMatcher.find()) {
 			String pageId = pageMatcher.group(1);
 			galleryId = Integer.parseInt(pageMatcher.group(2));
 			int pageNum = Integer.parseInt(pageMatcher.group(3));
@@ -163,8 +165,8 @@ public class EHFetcher implements SiteFetcher {
 	private void loadFields(JSONObject data, @Nullable DBHandler database) {
 		Pattern titleRegex = Pattern.compile(
 				"^(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*" +
-				"(?:[^\\[|\\](){}<>]*\\s*\\|\\s*)?([^\\[|\\](){}<>]*?)" +
-				"(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*$"
+						"(?:[^\\[|\\](){}<>]*\\s*\\|\\s*)?([^\\[|\\](){}<>]*?)" +
+						"(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*$"
 		);
 		Matcher titleMatcher = titleRegex.matcher(data.getString("title"));
 		Matcher japaneseTitleMatcher = titleRegex.matcher(data.getString("title_jpn"));
@@ -174,7 +176,7 @@ public class EHFetcher implements SiteFetcher {
 
 		HashSet<String> allTags = new HashSet<>();
 
-		for(Object cur : data.getJSONArray("tags")) {
+		for (Object cur : data.getJSONArray("tags")) {
 			allTags.add(cur.toString());
 		}
 
@@ -200,7 +202,7 @@ public class EHFetcher implements SiteFetcher {
 		rating = Double.parseDouble(data.getString("rating").trim());
 		timePosted = Instant.ofEpochSecond(Long.parseLong(data.getString("posted").trim()));
 
-		if(database != null) {
+		if (database != null) {
 			// Cache the data loaded
 			logger.debug("Caching entry...");
 			database.cache(this);

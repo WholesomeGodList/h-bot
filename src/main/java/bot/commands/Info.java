@@ -34,17 +34,17 @@ public class Info {
 	private static final Logger logger = LogManager.getLogger(Info.class);
 
 	public static void sendInfo(MessageChannel channel, String args, User author, EHApiHandler handler, DBHandler database) {
-		if(args != null && Pattern.compile("^\\d+$").matcher(args).find()) {
+		if (args != null && Pattern.compile("^\\d+$").matcher(args).find()) {
 			args = "https://nhentai.net/g/" + Integer.parseInt(args) + "/";
 		}
 		Validator.ArgType validate = siteValidate(args, channel);
-		if(!validate.isValid()) {
+		if (!validate.isValid()) {
 			return;
 		}
 
 		try {
-			if(validate == Validator.ArgType.GODLIST) {
-				if(args == null) {
+			if (validate == Validator.ArgType.GODLIST) {
+				if (args == null) {
 					// Something's gone seriously wrong.
 					logger.error("Bruh how is args null?????");
 					return;
@@ -52,12 +52,11 @@ public class Info {
 				WHFetcher wh = new WHFetcher(Integer.parseInt(args.substring(1)));
 				channel.sendMessage(getDoujinInfoEmbed(wh)).queue();
 
-				if(Validator.getArgType(wh.getLink()) == Validator.ArgType.NHENTAI) {
+				if (Validator.getArgType(wh.getLink()) == Validator.ArgType.NHENTAI) {
 					channel.sendTyping().complete();
 					args = wh.getLink();
 					validate = Validator.ArgType.NHENTAI;
-				}
-				else {
+				} else {
 					return;
 				}
 			}
@@ -130,7 +129,7 @@ public class Info {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static MessageEmbed getDoujinInfoEmbed(WHFetcher info) {
 		EmbedBuilder whInfo = new EmbedBuilder();
 		whInfo.setColor(Color.BLACK);
@@ -142,7 +141,7 @@ public class Info {
 		whInfo.addField("Tier", info.getTier(), true);
 		whInfo.addField("Parody", info.getParody(), true);
 
-		whInfo.addField("Pages", ""+info.getPages(), false);
+		whInfo.addField("Pages", "" + info.getPages(), false);
 		whInfo.addField("Tags", display(info.getTags()), false);
 
 		whInfo.setFooter("ID: #" + info.getId());
@@ -153,6 +152,7 @@ public class Info {
 
 	/**
 	 * Creates an information embed for a doujin, given an nhentai fetcher.
+	 *
 	 * @param info The NHFetcher object with which to build the embed.
 	 * @return A message embed containing all the information about a doujin.
 	 */
@@ -183,6 +183,7 @@ public class Info {
 
 	/**
 	 * Creates an information embed for a doujin, given an ehentai fetcher.
+	 *
 	 * @param info The EHFetcher object with which to build the embed.
 	 * @return A message embed containing all the information about a doujin.
 	 */

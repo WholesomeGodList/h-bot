@@ -225,6 +225,9 @@ public class Wiretap extends ListenerAdapter {
 						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "You do not have the permission Manage Server!")).queue();
 					}
 				}
+				default -> {
+					logger.error("Command not recognized. This should never happen.");
+				}
 			}
 		} catch (InsufficientPermissionException e) {
 			logger.info("Insufficient permissions. Missing permission " + e.getPermission().name());

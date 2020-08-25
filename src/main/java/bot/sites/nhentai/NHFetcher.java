@@ -20,9 +20,11 @@ import java.util.stream.Collectors;
 
 public class NHFetcher implements SiteFetcher {
 	private static final Logger logger = LogManager.getLogger(NHFetcher.class);
+
 	/**
 	 * Creates a new NHFetcher object and populates the fields with information.
-	 * @param url The nhentai URL to fetch information about.
+	 *
+	 * @param url      The nhentai URL to fetch information about.
 	 * @param database A DBHandler object (to get the cache from). If null, caching will be disabled.
 	 * @throws IOException If something goes wrong with the fetching, an IOException is thrown.
 	 */
@@ -30,15 +32,15 @@ public class NHFetcher implements SiteFetcher {
 		logger.debug("Connecting to " + url);
 		// Handle URL
 		url = url.trim().replace("http://", "https://");
-		if(!url.endsWith("/")) {
+		if (!url.endsWith("/")) {
 			url += "/";
 		}
 
 		this.url = url;
 
-		if(database != null) {
+		if (database != null) {
 			boolean cached = database.loadFromCache(this);
-			if(cached) {
+			if (cached) {
 				// Found it in the caches (and the data has already been loaded). We can stop here.
 				return;
 			}
@@ -80,8 +82,8 @@ public class NHFetcher implements SiteFetcher {
 		// Oh boy, parsing time.
 		Pattern titleRegex = Pattern.compile(
 				"^(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*" +
-				"(?:[^\\[|\\](){}<>]*\\s*\\|\\s*)?([^\\[|\\](){}<>]*?)" +
-				"(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*$"
+						"(?:[^\\[|\\](){}<>=]*\\s*\\|\\s*)?([^\\[|\\](){}<>=]*?)" +
+						"(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*$"
 		);
 
 		String title = doc.select("h1.title").first() == null ? "None" : doc.select("h1.title").first().text().trim();
@@ -114,7 +116,7 @@ public class NHFetcher implements SiteFetcher {
 				.results().map(m -> m.group(1)).findFirst().orElseThrow());
 		timePosted = Instant.parse(doc.select("time").first().attr("datetime"));
 
-		if(database != null) {
+		if (database != null) {
 			// Cache the data loaded
 			logger.debug("Caching entry...");
 			database.cache(this);

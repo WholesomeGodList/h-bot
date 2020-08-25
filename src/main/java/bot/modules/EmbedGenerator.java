@@ -9,8 +9,10 @@ import java.util.ArrayList;
 
 public class EmbedGenerator {
 	private static final Logger logger = LogManager.getLogger(EmbedGenerator.class);
+
 	/**
 	 * Creates a MessageEmbed with a random meme for the cursed numbers.
+	 *
 	 * @return A MessageEmbed with a meme about 177013.
 	 */
 	public static MessageEmbed cursedEmbed() {
@@ -29,10 +31,10 @@ public class EmbedGenerator {
 
 	/**
 	 * Creates a MessageEmbed with a header and content, with the bot's icon.
-	 * @param header The header of the embed.
+	 *
+	 * @param header  The header of the embed.
 	 * @param content The content of the embed.
 	 * @return A MessageEmbed with the corresponding header and content.
-	 *
 	 * @see EmbedGenerator#createAlertEmbed(String, String, String)
 	 */
 	public static MessageEmbed createAlertEmbed(String header, String content) {
@@ -45,11 +47,11 @@ public class EmbedGenerator {
 
 	/**
 	 * Creates a MessageEmbed with a header, title, and content, with the bot's icon.
-	 * @param header The header of the embed.
-	 * @param title The title of the embed (just below the header).
+	 *
+	 * @param header  The header of the embed.
+	 * @param title   The title of the embed (just below the header).
 	 * @param content The content of the embed.
 	 * @return A MessageEmbed with the corresponding header, title, and content.
-	 *
 	 * @see EmbedGenerator#createAlertEmbed(String, String)
 	 */
 	public static MessageEmbed createAlertEmbed(String header, String title, String content) {
