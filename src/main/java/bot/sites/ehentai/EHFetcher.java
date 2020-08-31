@@ -165,14 +165,14 @@ public class EHFetcher implements SiteFetcher {
 	private void loadFields(JSONObject data, @Nullable DBHandler database) {
 		Pattern titleRegex = Pattern.compile(
 				"^(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*" +
-						"(?:[^\\[|\\](){}<>]*\\s*\\|\\s*)?([^\\[|\\](){}<>]*?)" +
-						"(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*$"
+				"(?:[^\\[|\\](){}<>=]*\\s*\\|\\s*)?([^\\[|\\](){}<>=]*?)" +
+				"(?:\\s*(?:=.*?=|<.*?>|\\[.*?]|\\(.*?\\)|\\{.*?})\\s*)*$"
 		);
 		Matcher titleMatcher = titleRegex.matcher(data.getString("title"));
 		Matcher japaneseTitleMatcher = titleRegex.matcher(data.getString("title_jpn"));
 
-		title = titleMatcher.find() ? titleMatcher.group(1).trim() : data.getString("title");
-		titleJapanese = japaneseTitleMatcher.find() ? japaneseTitleMatcher.group(1).trim() : data.getString("title_jpn");
+		title = titleMatcher.find() ? (titleMatcher.group(1).trim().isEmpty() ? data.getString("title") : titleMatcher.group(1).trim()) : data.getString("title");
+		titleJapanese = japaneseTitleMatcher.find() ? (japaneseTitleMatcher.group(1).trim().isEmpty() ? data.getString("title_jpn") : japaneseTitleMatcher.group(1).trim()) : data.getString("title_jpn");
 
 		HashSet<String> allTags = new HashSet<>();
 
