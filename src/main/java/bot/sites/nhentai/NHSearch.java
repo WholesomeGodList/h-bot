@@ -11,7 +11,9 @@ import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -22,6 +24,56 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class NHSearch {
+	public static void main(String[] args) throws IOException {
+		// This is a utility main method used to scan all of nhentai.
+		Pattern gallery = Pattern.compile("/g/(\\d{1,6})/?");
+
+		ArrayList<String> allResults = new ArrayList<>();
+
+		String urlQuery = generateUrl("", "recent",true).trim();
+
+		PrintWriter pw = new PrintWriter(new FileWriter("your scan results file here"));
+		int currentPage = 1;
+		while (true) {
+			try {
+				String curUrlQuery = urlQuery + currentPage;
+				System.out.println("Current page: " + (currentPage));
+
+				Document doc = Jsoup.connect(curUrlQuery).get();
+
+				ArrayList<String> curResults = doc.select("a[href]").stream().map(n -> n.attr("abs:href"))
+						.map(gallery::matcher).filter(Matcher::find)
+						.map(s -> "https://nhentai.net/g/" + s.group(1) + "/")
+						.collect(Collectors.toCollection(ArrayList::new));
+
+				boolean stop = false;
+				for(String cur : curResults) {
+					Matcher matcher = gallery.matcher(cur);
+					if(matcher.find() && Integer.parseInt(matcher.group(1)) < 265000) {
+						stop = true;
+						break;
+					} else {
+						pw.println(cur);
+					}
+				}
+
+				if(stop) {
+					break;
+				}
+
+				currentPage++;
+			} catch (HttpStatusException e) {
+				System.out.println("Error: HTTP status " + e.getStatusCode());
+			} catch (IOException e) {
+				System.out.println("Exception occured in search. Query: " + urlQuery);
+				e.printStackTrace();
+			}
+		}
+
+		// We have actually already filtered out everything using the search URL
+		pw.close();
+	}
+
 	private static final Logger logger = LogManager.getLogger(NHSearch.class);
 
 	private static final String BASE_URL = "https://nhentai.net/search/?q=";
@@ -133,7 +185,7 @@ public class NHSearch {
 		}
 	}
 
-	private static String generateUrl(String query, boolean restrict) {
+	private static String generateUrl(String query, String sort, boolean restrict) {
 		HashSet<String> allTags = TagList.getBadTags();
 		if (restrict) {
 			allTags.addAll(TagList.nonWholesomeTagsWithoutQuery(query));
@@ -142,6 +194,10 @@ public class NHSearch {
 
 		query += " english";
 
-		return BASE_URL + URLEncoder.encode(query + " -tag:\"" + String.join("\" -tag:\"", allTags) + "\"", StandardCharsets.UTF_8) + "&sort=popular&page=";
+		return BASE_URL + URLEncoder.encode(query + " -tag:\"webtoon\"" + " pages:>8" + " -tag:\"" + String.join("\" -tag:\"", allTags) + "\"", StandardCharsets.UTF_8) + "&sort=" + sort + "&page=";
+	}
+
+	private static String generateUrl(String query, boolean restrict) {
+		return generateUrl(query, "popular", restrict);
 	}
 }

@@ -41,7 +41,7 @@ public class TagList {
 	 */
 	private static final HashSet<String> illegalTags = new HashSet<>(
 			Arrays.asList(
-					"lolicon", "shotacon", "oppai loli"
+					"lolicon", "shotacon", "oppai loli", "low shotacon", "low lolicon"
 			)
 	);
 
