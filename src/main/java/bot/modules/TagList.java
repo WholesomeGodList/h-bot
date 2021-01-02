@@ -15,7 +15,8 @@ public class TagList {
 					"vomit", "bbm", "cannibalism", "tentacles", "rape", "snuff", "moral degeneration", "mind break", "humiliation",
 					"chikan", "ryona", "cum bath", "infantilism", "unbirth", "abortion",
 					"eye penetration", "urethra insertion", "chloroform", "parasite", "public use", "petrification", "necrophilia",
-					"brain fuck", "daughter", "torture", "birth"
+					"brain fuck", "daughter", "torture", "birth", "nipple fuck", "minigirl", "menstruation", "anorexic",
+					"shrinking", "giantess", "navel fuck", "possession", "miniguy", "age regression"
 			)
 	);
 
