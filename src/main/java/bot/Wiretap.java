@@ -56,7 +56,7 @@ public class Wiretap extends ListenerAdapter {
 		suspects.put(messageId, new ImmutablePair<>(authorId, fetcher));
 	}
 
-	private final Pattern abbreviation = Pattern.compile("[\\[{]\\s*(#\\d+|\\d{4})\\s*[}\\]]");
+	private final Pattern abbreviation = Pattern.compile("[\\[{]\\s*(#\\d+|\\d{4,})\\s*[}\\]]");
 
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
