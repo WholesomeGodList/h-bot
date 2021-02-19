@@ -25,7 +25,8 @@ public class Help {
 										
 				Abbreviations can also be used to check info of a doujin.
 				Enclosing the numbers (#1234 for the god list or 123456 for nhentai)
-				in `[]` or `{}` is equivalent to the info command.
+				in `[]` or `{}` is equivalent to the info command. (To prevent
+				accidental usage, abbreviations are disabled for anything below 4 digits.)
 										
 				This bot also works in DMs. Feel free to use it in DMs (the prefix is always `>` in DMs).
 				""", false);
