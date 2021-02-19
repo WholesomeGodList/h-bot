@@ -56,6 +56,8 @@ public class Wiretap extends ListenerAdapter {
 		suspects.put(messageId, new ImmutablePair<>(authorId, fetcher));
 	}
 
+	private final Pattern abbreviation = Pattern.compile("[\\[{]\\s*(#\\d+|\\d{4})\\s*[}\\]]");
+
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
 		// Someone sent something!
@@ -86,9 +88,8 @@ public class Wiretap extends ListenerAdapter {
 			return;
 		}
 
-		// Handle any <> / []
-		Pattern pattern = Pattern.compile("[\\[{]\\s*(#?\\d+)\\s*[}\\]]");
-		Matcher matcher = pattern.matcher(content);
+		// Handle any {} / []
+		Matcher matcher = abbreviation.matcher(content);
 		if (matcher.find()) {
 			content = prefix + "info " + matcher.group(1);
 			if (event.isFromType(ChannelType.TEXT) && !event.getTextChannel().isNSFW()) {

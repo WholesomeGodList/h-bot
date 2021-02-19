@@ -34,10 +34,6 @@ public class EHSearch {
 	private static final String BASE_URL = "https://e-hentai.org/?f_cats=1017&f_search=";
 
 	public static void runSearch(MessageChannel channel, User author, String query, boolean restrict, int pages, DBHandler database) {
-		channel.sendMessage(EmbedGenerator.createAlertEmbed("Searching...", "Please wait while the search is being done")).queue(
-				success -> success.delete().queueAfter(5, TimeUnit.SECONDS)
-		);
-
 		// Query preprocessing
 		query = query.trim();
 		String urlQuery = generateUrl(query);
@@ -46,6 +42,10 @@ public class EHSearch {
 			channel.sendMessage("***FBI OPEN UP***").queue();
 			return;
 		}
+
+		channel.sendMessage(EmbedGenerator.createAlertEmbed("Searching...", "Please wait while the search is being done")).queue(
+				success -> success.delete().queueAfter(5, TimeUnit.SECONDS)
+		);
 
 		final String fquery = query;
 

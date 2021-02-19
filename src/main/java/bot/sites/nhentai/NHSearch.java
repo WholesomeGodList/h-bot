@@ -79,10 +79,6 @@ public class NHSearch {
 	private static final String BASE_URL = "https://nhentai.net/search/?q=";
 
 	public static void runSearch(MessageChannel channel, User author, String query, boolean restrict, int pages, DBHandler database) {
-		channel.sendMessage(EmbedGenerator.createAlertEmbed("Searching...", "Please wait while the search is being done")).queue(
-				success -> success.delete().queueAfter(5, TimeUnit.SECONDS)
-		);
-
 		// Query preprocessing
 		query = query.trim();
 		logger.info("Running search with query " + query);
@@ -94,6 +90,10 @@ public class NHSearch {
 			channel.sendMessage("***FBI OPEN UP***").queue();
 			return;
 		}
+
+		channel.sendMessage(EmbedGenerator.createAlertEmbed("Searching...", "Please wait while the search is being done")).queue(
+				success -> success.delete().queueAfter(5, TimeUnit.SECONDS)
+		);
 
 		final String fquery = query;
 
