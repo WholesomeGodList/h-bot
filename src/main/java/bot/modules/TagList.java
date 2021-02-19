@@ -15,7 +15,8 @@ public class TagList {
 					"vomit", "bbm", "cannibalism", "tentacles", "rape", "snuff", "moral degeneration", "mind break", "humiliation",
 					"chikan", "ryona", "cum bath", "infantilism", "unbirth", "abortion",
 					"eye penetration", "urethra insertion", "chloroform", "parasite", "public use", "petrification", "necrophilia",
-					"brain fuck", "daughter", "torture", "birth"
+					"brain fuck", "daughter", "torture", "birth", "minigirl", "menstruation", "anorexic", "age regression",
+					"shrinking", "giantess", "navel fuck", "possession", "miniguy", "nipple fuck", "cbt"
 			)
 	);
 
@@ -30,7 +31,7 @@ public class TagList {
 					"bukkake", "bbw", "dick growth", "big areolae", "huge breasts", "slave", "gaping", "pegging",
 					"triple penetration", "prolapse", "human pet", "foot licking", "milking", "bondage", "multiple penises",
 					"asphyxiation", "stuck in wall", "human cattle", "clit growth", "ttf threesome", "phimosis", "glory hole",
-					"eggs", "incest", "urination", "prostitution", "fisting", "piss drinking"
+					"eggs", "incest", "urination", "prostitution", "fisting", "piss drinking", "inseki", "feminization"
 			)
 	);
 
