@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -95,16 +94,16 @@ public class NHFetcher implements SiteFetcher {
 		this.title = titleMatcher.find() ? titleMatcher.group(1).trim() : title;
 		this.titleJapanese = japaneseTitleMatcher.find() ? japaneseTitleMatcher.group(1).trim() : titleJapanese;
 
-		artists = tagSearch(Pattern.compile("/artist/(.*?)/?$"), doc).stream()
+		artists = tagSearch("/artist/(.*?)/?$", doc).stream()
 				.map(WordUtils::capitalize).collect(Collectors.toCollection(HashSet::new));
-		groups = tagSearch(Pattern.compile("/group/(.*?)/?$"), doc);
-		parodies = tagSearch(Pattern.compile("/parody/(.*?)/?$"), doc);
-		chars = tagSearch(Pattern.compile("/character/(.*?)/?$"), doc);
-		language = WordUtils.capitalize(tagSearch(Pattern.compile("/language/(.*?)/?$"), doc).stream()
+		groups = tagSearch("/group/(.*?)/?$", doc);
+		parodies = tagSearch("/parody/(.*?)/?$", doc);
+		chars = tagSearch("/character/(.*?)/?$", doc);
+		language = WordUtils.capitalize(tagSearch("/language/(.*?)/?$", doc).stream()
 				.filter((str) -> !(str.contains("translated") || str.contains("rewrite")))
 				.findFirst().orElse(null));
 
-		tags = tagSearch(Pattern.compile("/tag/(.*?)/?$"), doc);
+		tags = tagSearch("/tag/(.*?)/?$", doc);
 
 		// here come some nasty one liners
 		pages = Integer.parseInt(doc.select("span.tags").select("a").stream().filter(div ->
@@ -123,12 +122,8 @@ public class NHFetcher implements SiteFetcher {
 		}
 	}
 
-	private HashSet<String> tagSearch(Pattern pattern, Document doc) {
-		// whoo boy
-		return doc.select("a[href]").stream().map(link -> link.attr("abs:href"))
-				.map(pattern::matcher).filter(Matcher::find)
-				.map(m -> m.group(1)).filter(Objects::nonNull)
-				.map(str -> str.replaceAll("-", " "))
+	private HashSet<String> tagSearch(String pattern, Document doc) {
+		return doc.select("a[href~=" + pattern + "]").stream().map(link -> link.select("span.name").text())
 				.collect(Collectors.toCollection(HashSet::new));
 	}
 

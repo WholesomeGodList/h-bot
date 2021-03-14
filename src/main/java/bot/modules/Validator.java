@@ -37,7 +37,7 @@ public class Validator {
 			Arrays.asList(
 					"help", "tags", "info", "badtags", "warningtags",
 					"random", "search", "deepsearch", "addhook", "removehook",
-					"searcheh", "deepsearcheh", "setprefix", "botinfo"
+					"searcheh", "deepsearcheh", "setprefix", "botinfo", "clearcache"
 			)
 	);
 

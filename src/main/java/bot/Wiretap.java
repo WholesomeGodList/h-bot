@@ -226,6 +226,16 @@ public class Wiretap extends ListenerAdapter {
 						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "You do not have the permission Manage Server!")).queue();
 					}
 				}
+				case "clearcache" -> {
+					if(event.getAuthor().getId().equals("267120112719495173")) {
+						boolean reset = database.resetTables();
+						if(reset) {
+							channel.sendMessage("Reset the cache successfully!").queue();
+						} else {
+							channel.sendMessage("Cache reset unsuccessful.").queue();
+						}
+					}
+				}
 				default -> {
 					logger.error("Command not recognized. This should never happen.");
 				}

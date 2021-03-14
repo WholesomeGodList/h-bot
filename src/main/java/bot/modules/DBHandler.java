@@ -28,6 +28,11 @@ public class DBHandler {
 	 */
 	public DBHandler() {
 		prefixes = new HashMap<>();
+
+		initializeTables();
+	}
+
+	private void initializeTables() {
 		Connection connectionConfig;
 
 		//Creating database for command configs for each server
@@ -467,5 +472,14 @@ public class DBHandler {
 
 		stmt.executeBatch();
 		stmt.close();
+	}
+
+	public boolean resetTables() throws SQLException {
+		cache.close();
+		File cacheFile = new File("./cache.db");
+
+		boolean removed = cacheFile.delete();
+		initializeTables();
+		return removed;
 	}
 }
