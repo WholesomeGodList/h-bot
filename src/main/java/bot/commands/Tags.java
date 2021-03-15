@@ -11,16 +11,12 @@ import org.jsoup.HttpStatusException;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static bot.modules.Validator.siteValidate;
 
 public class Tags {
 	public static void sendTags(MessageChannel channel, String args, EHApiHandler handler, DBHandler database) {
-		if (args != null && Pattern.compile("^\\d+$").matcher(args).find()) {
-			args = "https://nhentai.net/g/" + Integer.parseInt(args) + "/";
-		}
 		Validator.ArgType validate = siteValidate(args, channel);
 		if (!validate.isValid()) {
 			return;

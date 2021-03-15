@@ -1,11 +1,13 @@
 package bot.modules;
 
 import bot.sites.ehentai.EHFetcher;
+import bot.sites.mangadex.MDFetcher;
 import bot.sites.nhentai.NHFetcher;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,8 +22,8 @@ public class DBHandler {
 	private final HashMap<String, String> prefixes;
 	private static final Logger logger = LogManager.getLogger(DBHandler.class);
 
-	private static final BasicDataSource config = new BasicDataSource();
-	private static final BasicDataSource cache = new BasicDataSource();
+	private static BasicDataSource config;
+	private static BasicDataSource cache;
 
 	/**
 	 * Creates and sets up a local SQL server if it doesn't exist already. It will also initialize all necessary connections.
@@ -58,6 +60,8 @@ public class DBHandler {
 		}
 		try {
 			//Initializing connections pool
+			config = new BasicDataSource();
+
 			config.setUrl("jdbc:sqlite:config.db");
 			config.setMinIdle(2);
 			config.setMaxIdle(5);
@@ -96,6 +100,11 @@ public class DBHandler {
 							"title_japanese text, language text, pages integer," +
 							" thumb text, favorites integer, timeposted integer)");
 
+					create.execute("CREATE TABLE mangadex (url text, timecached integer, id integer," +
+							"title text, demographic text, status text, language text, full_description text," +
+							"description text, chapters integer, total_chapters integer, is_hentai integer," +
+							"comments integer, views integer, follows integer, rating real, lastupdated integer)");
+
 					// Now create all the small tables
 					create.execute("CREATE TABLE ehmaletags (url text, tag text)");
 					create.execute("CREATE TABLE ehfemaletags (url text, tag text)");
@@ -110,6 +119,15 @@ public class DBHandler {
 					create.execute("CREATE TABLE nhgroups (url text, \"group\" text)");
 					create.execute("CREATE TABLE nhparodies (url text, parody text)");
 					create.execute("CREATE TABLE nhchars (url text, character text)");
+
+					create.execute("CREATE TABLE mdauthors (url text, author text)");
+					create.execute("CREATE TABLE mdartists (url text, artist text)");
+					create.execute("CREATE TABLE mdgenres (url text, tag text)");
+					create.execute("CREATE TABLE mdthemes (url text, tag text)");
+					create.execute("CREATE TABLE mdformats (url text, tag text)");
+					create.execute("CREATE TABLE mdcontents (url text, tag text)");
+
+					create.execute("CREATE TABLE mdtaglist (id integer primary key, name text, \"group\" text, description text)");
 				}
 			} catch (SQLException e) {
 				logger.error("Config database creation failed. Error details:");
@@ -118,6 +136,8 @@ public class DBHandler {
 		}
 		try {
 			//Initializing connections pool
+			cache = new BasicDataSource();
+
 			cache.setUrl("jdbc:sqlite:cache.db");
 			cache.setMinIdle(2);
 			cache.setMaxIdle(5);
@@ -366,6 +386,89 @@ public class DBHandler {
 	}
 
 	/**
+	 * Looks for a cached version of MDFetcher in the database. If there is one, it is used to populate all the fields
+	 * of the passed MDFetcher object.
+	 * <p>
+	 * If the cached version is too old (older than 2 weeks) it is thrown out and not used.
+	 *
+	 * @param load An MDFetcher object with which to load the cache into.
+	 * @return Whether this value was found in the cache or not.
+	 */
+	public boolean loadFromCache(MDFetcher load) {
+		try (Connection cacheConn = cache.getConnection()) {
+			PreparedStatement guillotine = cacheConn.prepareStatement("SELECT * FROM mangadex WHERE url=?");
+			guillotine.setString(1, load.getUrl());
+
+			ResultSet rs = guillotine.executeQuery();
+			//execute the nobles
+
+			if (rs.next()) {
+				// If the entry is older than 14 days...
+				if (rs.getLong("timecached") < (Instant.now().getEpochSecond() - (86400 * 14))) {
+
+					PreparedStatement coronavirus = cacheConn.prepareStatement("DELETE FROM mangadex WHERE url=?");
+					//Execute the old queries!
+
+					coronavirus.setString(1, load.getUrl());
+					coronavirus.execute();
+
+					coronavirus.close();
+					//i wish we could do this too
+
+					return false;
+				}
+
+				// We're good. Start processing.
+
+				load.setTitle(rs.getString("title"));
+
+				load.setDemographic(rs.getString("demographic"));
+				load.setStatus(rs.getString("status"));
+				load.setLanguage(rs.getString("language"));
+				load.setFullDescription(rs.getString("full_description"));
+				load.setDescription(rs.getString("description"));
+
+				load.setChapters(rs.getInt("chapters"));
+				load.setTotalChapters(rs.getInt("total_chapters"));
+				load.setHentai(rs.getInt("is_hentai") == 1);
+				load.setComments(rs.getInt("comments"));
+				load.setViews(rs.getInt("views"));
+				load.setFollows(rs.getInt("follows"));
+				load.setRating(rs.getDouble("rating"));
+
+				load.setLastUpdated(Instant.ofEpochSecond(rs.getLong("lastupdated")));
+
+				String url = load.getUrl();
+
+				// Load in all the HashSets
+				load.setArtists(loadSetFromTable("mdartists", url, cacheConn));
+				load.setAuthors(loadSetFromTable("mdauthors", url, cacheConn));
+
+				load.setFormat(loadSetFromTable("mdformats", url, cacheConn));
+				load.setGenre(loadSetFromTable("mdgenres", url, cacheConn));
+				load.setTheme(loadSetFromTable("mdthemes", url, cacheConn));
+				load.setContent(loadSetFromTable("mdcontents", url, cacheConn));
+
+				HashSet<String> allTags = new HashSet<>();
+				allTags.addAll(load.getGenre());
+				allTags.addAll(load.getFormat());
+				allTags.addAll(load.getTheme());
+				allTags.addAll(load.getContent());
+
+				load.setAllTags(allTags);
+				return true;
+			} else {
+				// It's not in the cache.
+				return false;
+			}
+		} catch (SQLException e) {
+			logger.error("An error occurred during the cache query.");
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	/**
 	 * Caches the data currently inside the passed EHFetcher to internal storage.
 	 *
 	 * @param data The EHFetcher with data to be cached.
@@ -446,6 +549,90 @@ public class DBHandler {
 			e.printStackTrace();
 		}
 	}
+
+	/**
+	 * Caches the data currently inside the passed MDFetcher to internal storage.
+	 *
+	 * @param data The MDFetcher with data to be cached.
+	 */
+	public void cache(MDFetcher data) {
+		try (Connection cacheConn = cache.getConnection()) {
+			PreparedStatement stmt = cacheConn.prepareStatement("INSERT INTO mangadex VALUES " +
+					"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+			//insert necessary values and tell bobby to fuck off
+			stmt.setString(1, data.getUrl());
+			stmt.setLong(2, Instant.now().getEpochSecond());
+			stmt.setInt(3, data.getId());
+			stmt.setString(4, data.getTitle());
+			stmt.setString(5, data.getDemographic());
+			stmt.setString(6, data.getStatus());
+			stmt.setString(7, data.getLanguage());
+			stmt.setString(8, data.getFullDescription());
+			stmt.setString(9, data.getDescription());
+			stmt.setInt(10, data.getChapters());
+			stmt.setInt(11, data.getTotalChapters());
+			stmt.setInt(12, data.isHentai() ? 1 : 0);
+			stmt.setInt(13, data.getComments());
+			stmt.setInt(14, data.getViews());
+			stmt.setInt(15, data.getFollows());
+			stmt.setDouble(16, data.getRating());
+			stmt.setLong(17, data.getLastUpdated().getEpochSecond());
+
+			stmt.execute(); //jesus christ
+
+			String url = data.getUrl();
+
+			insertSetIntoTable(data.getArtists(),"mdartists", url, cacheConn);
+			insertSetIntoTable(data.getAuthors(),"mdauthors", url, cacheConn);
+
+			insertSetIntoTable(data.getFormat(),"mdformats", url, cacheConn);
+			insertSetIntoTable(data.getGenre(),"mdgenres", url, cacheConn);
+			insertSetIntoTable(data.getTheme(),"mdthemes", url, cacheConn);
+			insertSetIntoTable(data.getContent(),"mdcontents", url, cacheConn);
+
+			logger.debug("Caching completed.");
+		} catch (SQLException e) {
+			logger.error("An error occurred during the cache insertion.");
+			e.printStackTrace();
+		}
+	}
+
+	/*
+	public ImmutableTriple<String, String, String> getTagInfo(int tagId) {
+		try (Connection cacheConn = cache.getConnection()) {
+			PreparedStatement guillotine = cacheConn.prepareStatement("SELECT * FROM mdtaglist WHERE id=?");
+			guillotine.setInt(1, tagId);
+
+			ResultSet rs = guillotine.executeQuery();
+
+			if(rs.next()) {
+				return new ImmutableTriple<>(rs.getString("name"), rs.getString("group"), rs.getString("description"));
+			} else {
+				return null;
+			}
+		} catch (SQLException e) {
+			logger.error("An error occurred while reading from the cache.");
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public boolean tagsAreCached() {
+		try (Connection cacheConn = cache.getConnection()) {
+			PreparedStatement guillotine = cacheConn.prepareStatement("SELECT * FROM mdtaglist WHERE id=?");
+			guillotine.setInt(1, 1);
+
+			ResultSet rs = guillotine.executeQuery();
+
+			return rs.next();
+		} catch (SQLException e) {
+			logger.error("An error occurred while reading from the cache.");
+			e.printStackTrace();
+			return false;
+		}
+	}
+	 */
 
 	private HashSet<String> loadSetFromTable(String tableName, String url, Connection conn) throws SQLException {
 		PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + tableName + " WHERE url=?");

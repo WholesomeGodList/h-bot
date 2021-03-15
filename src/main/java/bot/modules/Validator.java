@@ -13,20 +13,26 @@ public class Validator {
 	 * Can also be checked for validity.
 	 */
 	public enum ArgType {
-		INVALID(false),
-		NHENTAI(true),
-		EHENTAI(true),
-		GODLIST(true),
-		VALID(true);
+		INVALID(false, false),
+		NHENTAI(true, true),
+		EHENTAI(true, true),
+		GODLIST(true, true),
+		MANGADEX(true, false),
+		VALID(true, false);
 
 		private final boolean valid;
+		private final boolean nsfw;
 
-		ArgType(final boolean valid) {
+		ArgType(final boolean valid, final boolean nsfw) {
 			this.valid = valid;
+			this.nsfw = nsfw;
 		}
 
 		public boolean isValid() {
 			return valid;
+		}
+		public boolean isNSFW() {
+			return nsfw;
 		}
 	}
 

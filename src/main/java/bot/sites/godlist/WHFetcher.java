@@ -49,7 +49,7 @@ public class WHFetcher {
 		JSONObject table = getCachedTable();
 		JSONObject entry = getEntry(id, table);
 
-		url = "https://wholesomelist.com/list#" + id;
+		url = "https://wholesomelist.com/list/" + id;
 		link = entry.getString("link");
 
 		title = entry.getString("title");

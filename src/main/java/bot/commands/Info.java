@@ -25,7 +25,6 @@ import java.awt.*;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static bot.modules.Validator.siteValidate;
@@ -34,9 +33,6 @@ public class Info {
 	private static final Logger logger = LogManager.getLogger(Info.class);
 
 	public static void sendInfo(MessageChannel channel, String args, User author, EHApiHandler handler, DBHandler database) {
-		if (args != null && Pattern.compile("^\\d+$").matcher(args).find()) {
-			args = "https://nhentai.net/g/" + Integer.parseInt(args) + "/";
-		}
 		Validator.ArgType validate = siteValidate(args, channel);
 		if (!validate.isValid()) {
 			return;

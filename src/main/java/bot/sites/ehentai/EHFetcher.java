@@ -64,11 +64,6 @@ public class EHFetcher implements SiteFetcher {
 	 */
 	public EHFetcher(String url, EHApiHandler handler, @Nullable DBHandler database) throws IOException {
 		logger.debug("Connecting to " + url);
-		// Handle URL
-		url = url.trim().replace("http://", "https://");
-		if (!url.endsWith("/")) {
-			url += "/";
-		}
 
 		this.url = url;
 

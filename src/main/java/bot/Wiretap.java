@@ -56,7 +56,7 @@ public class Wiretap extends ListenerAdapter {
 		suspects.put(messageId, new ImmutablePair<>(authorId, fetcher));
 	}
 
-	private final Pattern abbreviation = Pattern.compile("[\\[{]\\s*(#\\d+|\\d{4,})\\s*[}\\]]");
+	private final Pattern abbreviation = Pattern.compile("[\\[{]\\s*(#\\d+|[Mm]\\d+|\\d{4,})\\s*[}\\]]");
 
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
@@ -88,13 +88,13 @@ public class Wiretap extends ListenerAdapter {
 			return;
 		}
 
+		boolean isAbbreviation = false;
+
 		// Handle any {} / []
 		Matcher matcher = abbreviation.matcher(content);
 		if (matcher.find()) {
 			content = prefix + "info " + matcher.group(1);
-			if (event.isFromType(ChannelType.TEXT) && !event.getTextChannel().isNSFW()) {
-				return;
-			}
+			isAbbreviation = true;
 		}
 
 		// Prefix loaded
@@ -116,9 +116,32 @@ public class Wiretap extends ListenerAdapter {
 			return;
 		}
 
-		// Everything the bot does needs to be in NSFW channels
-		if (event.isFromGuild() && !event.getTextChannel().isNSFW()) {
-			channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "This channel is not NSFW", "This bot can only be used in NSFW channels!")).queue();
+		// Enforce HTTPS, and make the URL valid
+		if(args != null) {
+			if(Pattern.compile("^http://").matcher(args).find()) {
+				args = args.replace("http://", "https://");
+			}
+			if(Pattern.compile("^https://www\\.").matcher(args).find()) {
+				args = args.replace("https://www\\.", "https://");
+			}
+			if(Pattern.compile("^https://").matcher(args).find()) {
+				if(!args.endsWith("/")) {
+					args = args + "/";
+				}
+			}
+			if(Pattern.compile("^\\d+$").matcher(args).find()) {
+				args = "https://mangadex.org/title/" + args + "/";
+			}
+			if(Pattern.compile("^\\d+$").matcher(args).find()) {
+				args = "https://nhentai.net/g/" + Integer.parseInt(args) + "/";
+			}
+		}
+
+		// Everything the bot does needs to be in NSFW channels... unless it's one of the SFW sites
+		if (event.isFromGuild() && !event.getTextChannel().isNSFW() && args != null && Validator.getArgType(args).isNSFW()) {
+			if(!isAbbreviation) {
+				channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "This channel is not NSFW", "This command can only be used in NSFW channels!")).queue();
+			}
 			return;
 		}
 

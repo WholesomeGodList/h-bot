@@ -28,3 +28,4 @@ config.db
 .gradle/
 .idea/
 build/
+config.json

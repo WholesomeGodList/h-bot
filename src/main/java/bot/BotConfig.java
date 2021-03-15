@@ -3,7 +3,6 @@ package bot;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +14,7 @@ public class BotConfig {
 
 	private static String readRequiredConfigValue(String key, String errorMessage) {
 		try {
-			InputStream is = new FileInputStream(new File("./config.json"));
+			InputStream is = new FileInputStream("./config.json");
 			JSONObject bruh = new JSONObject(new JSONTokener(is));
 			return bruh.getString(key);
 		} catch (IOException e) {

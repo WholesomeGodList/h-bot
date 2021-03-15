@@ -29,12 +29,6 @@ public class NHFetcher implements SiteFetcher {
 	 */
 	public NHFetcher(String url, @Nullable DBHandler database) throws IOException {
 		logger.debug("Connecting to " + url);
-		// Handle URL
-		url = url.trim().replace("http://", "https://");
-		if (!url.endsWith("/")) {
-			url += "/";
-		}
-
 		this.url = url;
 
 		if (database != null) {
@@ -91,8 +85,8 @@ public class NHFetcher implements SiteFetcher {
 		Matcher titleMatcher = titleRegex.matcher(title);
 		Matcher japaneseTitleMatcher = titleRegex.matcher(titleJapanese);
 
-		this.title = titleMatcher.find() ? titleMatcher.group(1).trim() : title;
-		this.titleJapanese = japaneseTitleMatcher.find() ? japaneseTitleMatcher.group(1).trim() : titleJapanese;
+		this.title = titleMatcher.find() ? titleMatcher.group(1).trim().isEmpty() ? title : titleMatcher.group(1).trim() : title;
+		this.titleJapanese = japaneseTitleMatcher.find() ? japaneseTitleMatcher.group(1).trim().isEmpty() ? titleJapanese : japaneseTitleMatcher.group(1).trim() : titleJapanese;
 
 		artists = tagSearch("/artist/(.*?)/?$", doc).stream()
 				.map(WordUtils::capitalize).collect(Collectors.toCollection(HashSet::new));
