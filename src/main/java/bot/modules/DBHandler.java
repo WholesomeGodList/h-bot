@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -428,7 +427,6 @@ public class DBHandler {
 				load.setFullDescription(rs.getString("full_description"));
 				load.setDescription(rs.getString("description"));
 
-				load.setChapters(rs.getInt("chapters"));
 				load.setTotalChapters(rs.getInt("total_chapters"));
 				load.setHentai(rs.getInt("is_hentai") == 1);
 				load.setComments(rs.getInt("comments"));
@@ -570,7 +568,7 @@ public class DBHandler {
 			stmt.setString(7, data.getLanguage());
 			stmt.setString(8, data.getFullDescription());
 			stmt.setString(9, data.getDescription());
-			stmt.setInt(10, data.getChapters());
+			// stmt.setInt(10, data.getChapters()); //TODO FIX THIS
 			stmt.setInt(11, data.getTotalChapters());
 			stmt.setInt(12, data.isHentai() ? 1 : 0);
 			stmt.setInt(13, data.getComments());
