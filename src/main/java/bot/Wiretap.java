@@ -129,7 +129,7 @@ public class Wiretap extends ListenerAdapter {
 					args = args + "/";
 				}
 			}
-			if(Pattern.compile("^\\d+$").matcher(args).find()) {
+			if(Pattern.compile("^m\\d+$").matcher(args).find()) {
 				args = "https://mangadex.org/title/" + args + "/";
 			}
 			if(Pattern.compile("^\\d+$").matcher(args).find()) {

@@ -1,7 +1,7 @@
 # H-Bot
-[![Java Version](https://img.shields.io/badge/JDK%20Version-14-blue)](https://openjdk.java.net/projects/jdk/14/)
+[![Java Version](https://img.shields.io/badge/JDK%20Version-15-blue)](https://openjdk.java.net/projects/jdk/15/)
 [![GPLv3 license](https://img.shields.io/github/license/WholesomeGodList/h-bot)](http://perso.crans.org/besson/LICENSE.html)
-[![Releases](https://img.shields.io/github/v/release/WholesomeGodList/h-bot)](https://github.com/WholesomeGodList/h-bot-old/releases)
+[![Releases](https://img.shields.io/github/v/release/WholesomeGodList/h-bot)](https://github.com/WholesomeGodList/h-bot/releases)
 ![build](https://github.com/WholesomeGodList/h-bot/workflows/Gradle%20CI/badge.svg)
 [![CodeFactor](https://www.codefactor.io/repository/github/wholesomegodlist/h-bot/badge)](https://www.codefactor.io/repository/github/wholesomegodlist/h-bot)
 
