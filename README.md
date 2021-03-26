@@ -87,7 +87,7 @@ For config.json, make sure that you replace the `"botToken": "Your bot token her
 Once you're done with all of that, your bot is ready to start.
 
 ### Startup
-Since I do use preview features in the source code, you won't be able to just run it using java -jar. This means this also requires JDK 14. If you don't know how to set up JDK 14, I recommend going to [AdoptOpenJDK and installing JDK 14](https://adoptopenjdk.net/?variant=openjdk14&jvmVariant=hotspot) through their easy-to-use binaries.
+Since I do use preview features in the source code, you won't be able to just run it using java -jar. This means this also requires JDK 15. If you don't know how to set up JDK 15, I recommend going to [AdoptOpenJDK and installing JDK 15](https://adoptopenjdk.net/?variant=openjdk15&jvmVariant=hotspot) through their easy-to-use binaries.
 
 To run the bot, you need to run the following command:
 ```
@@ -102,14 +102,14 @@ pause
 EXIT
 ```
 
-This will work as long as you put it in the same folder as the H-Bot jar. Make sure the bot is running using JDK 14. If it's not, this will not work. To ensure that it is running with JDK 14, instead of using `java`, you could instead use:
+This will work as long as you put it in the same folder as the H-Bot jar. Make sure the bot is running using JDK 15. If it's not, this will not work. To ensure that it is running with JDK 15, instead of using `java`, you could instead use:
 ```
-<your_path_to_java_14>\bin\java.exe --enable-preview -jar hbot.jar
+<your_path_to_java_15>\bin\java.exe --enable-preview -jar hbot.jar
 ```
 
 For Windows and AdoptOpenJDK users, that path will be:
 ```
-"C:\Program Files\AdoptOpenJDK\<JDK/JRE 14 folder>\bin\java.exe
+"C:\Program Files\AdoptOpenJDK\<JDK/JRE 15 folder>\bin\java.exe
 ```
 
 Once you have all of this set up, you're pretty much good to go! During startup, the bot will create and setup a few databases.
