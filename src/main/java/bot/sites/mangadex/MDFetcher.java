@@ -246,7 +246,7 @@ public class MDFetcher {
 					//TODO fill this in
 				)).collect(Collectors.toCollection(ArrayList::new));
 
-		//TODO fix caching
+		//TODO fix caching2
 	}
 
 	private String convertBBCode(String str) {
@@ -299,6 +299,7 @@ public class MDFetcher {
 		@Override
 		public String toString() {
 			//TODO: Convert to string format for Markdown
+			return "";
 		}
 
 		public int getId() {
@@ -507,12 +508,12 @@ public class MDFetcher {
 		this.content = content;
 	}
 
-	public ArrayList<String> getRecentChapters() {
+	public ArrayList<Chapter> getRecentChapters() {
 		return recentChapters;
 	}
 
-	public void setRecentChapters(ArrayList<String> recentChapters) {
-		this.recentChapters = recentChapters();
+	public void setRecentChapters(ArrayList<Chapter> recentChapters) {
+		this.recentChapters = recentChapters;
 	}
 
 	public int getTotalChapters() {
