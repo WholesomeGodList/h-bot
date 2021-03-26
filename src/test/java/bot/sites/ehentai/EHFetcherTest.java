@@ -72,7 +72,7 @@ public class EHFetcherTest {
 
 	@Test
 	void checkMetadataPage() throws IOException {
-		EHFetcher checker = new EHFetcher("https://e-hentai.org/s/75ec0bce98/1028286-16", handler, null);
+		EHFetcher checker = new EHFetcher("https://e-hentai.org/s/75ec0bce98/1028286-16/", handler, null);
 
 		assertEquals(1028286, checker.getGalleryId());
 		assertEquals("37231df5ee", checker.getGalleryToken());
