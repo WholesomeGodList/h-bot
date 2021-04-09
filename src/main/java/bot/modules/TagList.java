@@ -33,7 +33,7 @@ public class TagList {
 					"triple penetration", "prolapse", "human pet", "foot licking", "milking", "bondage", "multiple penises",
 					"asphyxiation", "stuck in wall", "human cattle", "clit growth", "ttf threesome", "phimosis", "glory hole",
 					"eggs", "incest", "urination", "prostitution", "fisting", "piss drinking", "inseki", "feminization",
-					"old lady", "old man", "mmm threesome", "fff threesome", "all the way through"
+					"old lady", "old man", "mmm threesome", "fff threesome", "all the way through", "farting"
 			)
 	);
 
