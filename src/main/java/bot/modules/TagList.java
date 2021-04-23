@@ -29,7 +29,7 @@ public class TagList {
 			Arrays.asList(
 					"amputee", "futanari", "gender bender", "human on furry", "group", "lactation", "femdom",
 					"ffm threesome", "double penetration", "gag", "harem", "strap-on", "inflation", "mmf threesome", "enema",
-					"bukkake", "bbw", "dick growth", "big areolae", "huge breasts", "slave", "gaping", "pegging",
+					"bukkake", "bbw", "dick growth", "huge breasts", "slave", "gaping", "pegging", "smegma",
 					"triple penetration", "prolapse", "human pet", "foot licking", "milking", "bondage", "multiple penises",
 					"asphyxiation", "stuck in wall", "human cattle", "clit growth", "ttf threesome", "phimosis", "glory hole",
 					"eggs", "incest", "urination", "prostitution", "fisting", "piss drinking", "inseki", "feminization",
