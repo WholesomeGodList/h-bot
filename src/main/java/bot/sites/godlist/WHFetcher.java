@@ -37,7 +37,7 @@ public class WHFetcher {
 	private final String title;
 	private final String author;
 	private final String parody;
-	private final String warning;
+	private final String note;
 	private final String tier;
 	private final int pages;
 
@@ -55,7 +55,7 @@ public class WHFetcher {
 		title = entry.getString("title");
 		author = entry.getString("author");
 		parody = entry.getString("parody");
-		warning = entry.getString("warning");
+		note = entry.getString("note");
 		tier = entry.getString("tier");
 		pages = Integer.parseInt(entry.getString("pages"));
 
@@ -135,8 +135,8 @@ public class WHFetcher {
 		return parody;
 	}
 
-	public String getWarning() {
-		return warning;
+	public String getNote() {
+		return note;
 	}
 
 	public String getTier() {

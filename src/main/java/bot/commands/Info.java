@@ -133,7 +133,7 @@ public class Info {
 		whInfo.setAuthor("Entry Info", null, "https://i.redd.it/fkg9yip5yyl21.png");
 		whInfo.setTitle(info.getTitle(), info.getLink());
 		whInfo.setDescription("by " + info.getAuthor());
-		whInfo.addField("Warning", info.getWarning(), true);
+		whInfo.addField("Note", info.getNote(), true);
 		whInfo.addField("Tier", info.getTier(), true);
 		whInfo.addField("Parody", info.getParody(), true);
 
