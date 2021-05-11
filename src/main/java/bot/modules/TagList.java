@@ -16,7 +16,8 @@ public class TagList {
 					"chikan", "ryona", "cum bath", "infantilism", "unbirth", "abortion",
 					"eye penetration", "urethra insertion", "chloroform", "parasite", "public use", "petrification", "necrophilia",
 					"brain fuck", "daughter", "torture", "birth", "minigirl", "menstruation", "anorexic", "age regression",
-					"shrinking", "giantess", "navel fuck", "possession", "miniguy", "nipple fuck", "cbt"
+					"shrinking", "giantess", "navel fuck", "possession", "miniguy", "nipple fuck", "cbt", "low scat", "dicknipples",
+					"nipple birth", "monkey", "nazi", "triple anal", "triple vaginal", "diaper"
 			)
 	);
 
@@ -28,10 +29,11 @@ public class TagList {
 			Arrays.asList(
 					"amputee", "futanari", "gender bender", "human on furry", "group", "lactation", "femdom",
 					"ffm threesome", "double penetration", "gag", "harem", "strap-on", "inflation", "mmf threesome", "enema",
-					"bukkake", "bbw", "dick growth", "big areolae", "huge breasts", "slave", "gaping", "pegging",
+					"bukkake", "bbw", "dick growth", "huge breasts", "slave", "gaping", "pegging", "smegma",
 					"triple penetration", "prolapse", "human pet", "foot licking", "milking", "bondage", "multiple penises",
 					"asphyxiation", "stuck in wall", "human cattle", "clit growth", "ttf threesome", "phimosis", "glory hole",
-					"eggs", "incest", "urination", "prostitution", "fisting", "piss drinking", "inseki", "feminization"
+					"eggs", "incest", "urination", "prostitution", "fisting", "piss drinking", "inseki", "feminization",
+					"old lady", "old man", "mmm threesome", "fff threesome", "all the way through", "farting"
 			)
 	);
 
