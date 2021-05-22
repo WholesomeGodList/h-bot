@@ -17,7 +17,8 @@ public class TagList {
 					"eye penetration", "urethra insertion", "chloroform", "parasite", "public use", "petrification", "necrophilia",
 					"brain fuck", "daughter", "torture", "birth", "minigirl", "menstruation", "anorexic", "age regression",
 					"shrinking", "giantess", "navel fuck", "possession", "miniguy", "nipple fuck", "cbt", "low scat", "dicknipples",
-					"nipple birth", "monkey", "nazi", "triple anal", "triple vaginal", "diaper"
+					"nipple birth", "monkey", "nazi", "triple anal", "triple vaginal", "diaper", "aunt", "mother", "father", 
+					"niece", "uncle", "grandfather", "grandmother", "granddaughter"
 			)
 	);
 
