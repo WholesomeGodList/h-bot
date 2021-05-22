@@ -138,7 +138,7 @@ public class Wiretap extends ListenerAdapter {
 		}
 
 		// Everything the bot does needs to be in NSFW channels... unless it's one of the SFW sites
-		if (event.isFromGuild() && !event.getTextChannel().isNSFW() && args != null && Validator.getArgType(args).isNSFW()) {
+		if (event.isFromGuild() && !event.getTextChannel().isNSFW() && args != null && (Validator.getArgType(args).isNSFW() || Validator.isNSFWCommand(command))) {
 			if(!isAbbreviation) {
 				channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "This channel is not NSFW", "This command can only be used in NSFW channels!")).queue();
 			}

@@ -48,6 +48,16 @@ public class Validator {
 	);
 
 	/**
+	 * A list of all inherently NSFW commands.
+	 */
+	private static final HashSet<String> nsfwCommands = new HashSet<>(
+			Arrays.asList(
+					"badtags", "warningtags", "random", "search", "deepsearch", "addhook", "removehook",
+					"searcheh", "deepsearcheh"
+			)
+	);
+
+	/**
 	 * A regex representing the cursed numbers.
 	 */
 	private static final Pattern cursed = Pattern.compile("https?://nhentai\\.net/g/177013/?");
@@ -60,6 +70,16 @@ public class Validator {
 	 */
 	public static boolean isCommand(String query) {
 		return allCommands.contains(query);
+	}
+
+	/**
+	 * Checks if a given query is an always-NSFW command.
+	 *
+	 * @param query The query to be checked.
+	 * @return If the query is an always-NSFW command or not.
+	 */
+	public static boolean isNSFWCommand(String query) {
+		return nsfwCommands.contains(query);
 	}
 
 	/**
