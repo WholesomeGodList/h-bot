@@ -186,7 +186,7 @@ public class EHFetcher implements SiteFetcher {
 
 		maleTags = searchList(Pattern.compile("^male:(.*)$"), allTags);
 		femaleTags = searchList(Pattern.compile("female:(.*)$"), allTags);
-		miscTags = searchList(Pattern.compile("^([^:]*)$"), allTags);
+		miscTags = searchList(Pattern.compile("^other:(.*)$"), allTags);
 
 		String categoryName = data.getString("category");
 		category = Arrays.stream(Category.values())
