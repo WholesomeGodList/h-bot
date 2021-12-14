@@ -45,7 +45,7 @@ public class BotMain {
 					.setChunkingFilter(ChunkingFilter.NONE)
 					.addEventListeners(new Wiretap(database, handler))
 					.setAutoReconnect(true)
-					.setActivity(Activity.watching("hentai | >help"))
+					.setActivity(Activity.watching("you | >help"))
 					.build()
 					.awaitReady();
 

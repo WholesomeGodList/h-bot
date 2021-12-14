@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.interactions.components.Button;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.text.WordUtils;
 import org.apache.logging.log4j.LogManager;
@@ -45,8 +46,8 @@ public class Info {
 					logger.error("Bruh how is args null?????");
 					return;
 				}
-				WHFetcher wh = new WHFetcher(Integer.parseInt(args.substring(1)));
-				channel.sendMessage(getDoujinInfoEmbed(wh)).queue();
+				WHFetcher wh = new WHFetcher(args);
+				channel.sendMessageEmbeds(getDoujinInfoEmbed(wh)).queue();
 
 				if (Validator.getArgType(wh.getLink()) == Validator.ArgType.NHENTAI) {
 					channel.sendTyping().complete();
@@ -80,11 +81,11 @@ public class Info {
 					logger.info("No problems found. Sending info embed...");
 					// It's good. Send the embed.
 					channel.sendTyping().complete();
-					channel.sendMessage(embed).queue();
+					channel.sendMessageEmbeds(embed).queue();
 				}
-				case ILLEGAL -> {// It's not legal. Send another embed.
+				case ILLEGAL -> { // It's not legal. Send another embed.
 					logger.info("It's not legal.");
-					channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert",
+					channel.sendMessageEmbeds(EmbedGenerator.createAlertEmbed("Bot Alert",
 							"This doujin violates the Discord ToS",
 							"This doujin contained the following illegal tags:\n" +
 									display(checker.getRight()))).queue();
@@ -95,8 +96,7 @@ public class Info {
 					EmbedBuilder alter = new EmbedBuilder(EmbedGenerator.createAlertEmbed("Bot Alert",
 							"This doujin has potentially dangerous tags",
 							"This doujin contained the following tags:\n" +
-									display(checker.getRight())));
-					alter.addField("Continue?", "To continue, press the checkmark.", false);
+									display(checker.getRight()) + "\n\nWould you like to continue?"));
 
 					SiteFetcher fetcher = switch (validate) {
 						case EHENTAI:
@@ -106,11 +106,11 @@ public class Info {
 						default:
 							yield null;
 					};
-
-					channel.sendMessage(alter.build()).queue(
+					channel.sendMessageEmbeds(alter.build()).setActionRow(
+							Button.success("yes", "Yes"),
+							Button.danger("no", "No")
+					).queue(
 							success -> {
-								success.addReaction("U+2705").queue();
-								success.addReaction("U+274C").queue();
 								Wiretap.registerSuspect(success.getId(), author.getId(), fetcher);
 							}
 					);

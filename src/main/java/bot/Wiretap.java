@@ -19,9 +19,9 @@ import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -129,18 +129,18 @@ public class Wiretap extends ListenerAdapter {
 					args = args + "/";
 				}
 			}
-			if(Pattern.compile("^m\\d+$").matcher(args).find()) {
-				args = "https://mangadex.org/title/" + args + "/";
-			}
 			if(Pattern.compile("^\\d+$").matcher(args).find()) {
 				args = "https://nhentai.net/g/" + Integer.parseInt(args) + "/";
+			}
+			if(Pattern.compile("^#\\d+$").matcher(args).find()) {
+				args = "https://wholesomelist.com/list/" + args.substring(1);
 			}
 		}
 
 		// Everything the bot does needs to be in NSFW channels... unless it's one of the SFW sites
 		if (event.isFromGuild() && !event.getTextChannel().isNSFW() && args != null && (Validator.getArgType(args).isNSFW() || Validator.isNSFWCommand(command))) {
 			if(!isAbbreviation) {
-				channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "This channel is not NSFW", "This command can only be used in NSFW channels!")).queue();
+				channel.sendMessageEmbeds(EmbedGenerator.createAlertEmbed("Bot Alert", "This channel is not NSFW", "This command can only be used in NSFW channels!")).queue();
 			}
 			return;
 		}
@@ -150,11 +150,11 @@ public class Wiretap extends ListenerAdapter {
 			switch (command) {
 				case "help" -> {
 					channel.sendTyping().complete();
-					channel.sendMessage(Help.getHelpEmbed()).queue();
+					channel.sendMessageEmbeds(Help.getHelpEmbed()).queue();
 				}
 				case "botinfo" -> {
 					channel.sendTyping().complete();
-					channel.sendMessage(Help.getInfoEmbed()).queue();
+					channel.sendMessageEmbeds(Help.getInfoEmbed()).queue();
 				}
 				case "info" -> {
 					channel.sendTyping().complete();
@@ -166,7 +166,7 @@ public class Wiretap extends ListenerAdapter {
 				}
 				case "badtags", "warningtags" -> {
 					channel.sendTyping().complete();
-					channel.sendMessage(BadTags.getBadTagEmbed()).queue();
+					channel.sendMessageEmbeds(BadTags.getBadTagEmbed()).queue();
 				}
 				case "searcheh", "deepsearcheh" -> {
 					channel.sendTyping().complete();
@@ -192,7 +192,7 @@ public class Wiretap extends ListenerAdapter {
 				}
 				case "random" -> {
 					channel.sendTyping().complete();
-					channel.sendMessage(EmbedGenerator.createAlertEmbed("Random Doujin", "Retrieving a random doujin from the Wholesome God List...")).queue(
+					channel.sendMessageEmbeds(EmbedGenerator.createAlertEmbed("Random Doujin", "Retrieving a random doujin from the Wholesome God List...")).queue(
 							success -> success.delete().queueAfter(5, TimeUnit.SECONDS)
 					);
 					try {
@@ -207,10 +207,10 @@ public class Wiretap extends ListenerAdapter {
 						return;
 					}
 					if (event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
-						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Info", "New doujins from the telecom will now be relayed here")).queue();
+						channel.sendMessageEmbeds(EmbedGenerator.createAlertEmbed("Bot Info", "New doujins from the telecom will now be relayed here")).queue();
 						database.addHook(event.getChannel().getId(), event.getGuild().getId());
 					} else {
-						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "You do not have the permission Manage Server!")).queue();
+						channel.sendMessageEmbeds(EmbedGenerator.createAlertEmbed("Bot Alert", "You do not have the permission Manage Server!")).queue();
 					}
 				}
 				case "removehook" -> {
@@ -218,10 +218,10 @@ public class Wiretap extends ListenerAdapter {
 						return;
 					}
 					if (event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
-						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Info", "New doujins from the telecom will no longer be relayed here")).queue();
+						channel.sendMessageEmbeds(EmbedGenerator.createAlertEmbed("Bot Info", "New doujins from the telecom will no longer be relayed here")).queue();
 						database.removeHook(event.getChannel().getId());
 					} else {
-						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "You do not have the permission Manage Server!")).queue();
+						channel.sendMessageEmbeds(EmbedGenerator.createAlertEmbed("Bot Alert", "You do not have the permission Manage Server!")).queue();
 					}
 				}
 				case "setprefix" -> {
@@ -230,23 +230,23 @@ public class Wiretap extends ListenerAdapter {
 					}
 					if (event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
 						if(args == null) {
-							channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "Please specify a prefix!")).queue();
+							channel.sendMessageEmbeds(EmbedGenerator.createAlertEmbed("Bot Alert", "Please specify a prefix!")).queue();
 							return;
 						}
 						try {
 							if(args.trim().length() > 10) {
-								channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "That prefix is too long. Please shorten it to 10 characters or less.")).queue();
+								channel.sendMessageEmbeds(EmbedGenerator.createAlertEmbed("Bot Alert", "That prefix is too long. Please shorten it to 10 characters or less.")).queue();
 								return;
 							}
 							database.setPrefix(args.trim(), event.getGuild().getId());
-							channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Info", "Your prefix has been set to `" + args.trim() +"`.")).queue();
+							channel.sendMessageEmbeds(EmbedGenerator.createAlertEmbed("Bot Info", "Your prefix has been set to `" + args.trim() +"`.")).queue();
 						} catch (SQLException e) {
 							channel.sendMessage("Something went wrong when setting your prefix. Please try again.").queue();
 							logger.error("Prefix was not set properly.");
 							e.printStackTrace();
 						}
 					} else {
-						channel.sendMessage(EmbedGenerator.createAlertEmbed("Bot Alert", "You do not have the permission Manage Server!")).queue();
+						channel.sendMessageEmbeds(EmbedGenerator.createAlertEmbed("Bot Alert", "You do not have the permission Manage Server!")).queue();
 					}
 				}
 				case "clearcache" -> {
@@ -274,20 +274,11 @@ public class Wiretap extends ListenerAdapter {
 	}
 
 	@Override
-	public void onMessageReactionAdd(MessageReactionAddEvent event) {
+	public void onButtonClick(ButtonClickEvent event) {
 		String messageId = event.getMessageId();
 
 		// Is it a reaction to something I care about?
 		if (!suspects.containsKey(messageId)) {
-			return;
-		}
-
-		if(event.getUser() == null || event.getUser().isBot()) {
-			return;
-		}
-
-		// Handle any wackiness
-		if (event.getUser() == null) {
 			return;
 		}
 
@@ -296,13 +287,21 @@ public class Wiretap extends ListenerAdapter {
 		ImmutablePair<String, SiteFetcher> cur = suspects.get(event.getMessageId());
 		String authorId = cur.getLeft();
 
-		if (event.getUserId().equals(authorId)) {
-			// Let's check the reaction...
-			String reaction = event.getReaction().getReactionEmote().getAsCodepoints();
+		if (event.getUser().getId().equals(authorId)) {
+			if(event.getButton() == null) {
+				return;
+			}
 
-			if (reaction.equals("U+2705")) {
-				// Checkmark
-				logger.info("Checkmark reaction detected. Sending info embed...");
+			// Let's check the button pressed...
+			String id = event.getButton().getId();
+
+			if(id == null) {
+				return;
+			}
+
+			if (id.equals("yes")) {
+				// Yes pressed
+				logger.info("Yes button pressed. Sending info embed...");
 				channel.deleteMessageById(messageId).queue();
 				channel.sendTyping().complete();
 
@@ -317,25 +316,13 @@ public class Wiretap extends ListenerAdapter {
 					return;
 				}
 
-				channel.sendMessage(embed).queue();
+				channel.sendMessageEmbeds(embed).queue();
 				suspects.remove(messageId);
-			} else if (reaction.equals("U+274c")) {
+			} else if (id.equals("no")) {
 				// X
 				logger.info("X reaction detected. Closing...");
 				channel.deleteMessageById(messageId).queue();
 				suspects.remove(messageId);
-			} else {
-				// Not a valid reaction. Yeet it.
-				logger.info("Invalid reaction. Deleting...");
-				if(channel.getType() == ChannelType.TEXT) {
-					event.getReaction().removeReaction(event.getUser()).queue();
-				}
-			}
-		} else {
-			logger.info("Wrong person. Deleting...");
-			// Wrong dude. Yeet the reaction into the sun.
-			if(channel.getType() == ChannelType.TEXT) {
-				event.getReaction().removeReaction(event.getUser()).queue();
 			}
 		}
 	}

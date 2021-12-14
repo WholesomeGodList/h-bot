@@ -127,7 +127,8 @@ public class Validator {
 		Pattern ehPage = Pattern.compile("https?://e[x\\-]hentai\\.org/s/([\\da-f]{10})/(\\d+)-(\\d+)/");
 		Pattern ehGallery = Pattern.compile("https?://e[x\\-]hentai\\.org/g/(\\d+)/([\\da-f]{10})/?");
 		Pattern nhGallery = Pattern.compile("https?://nhentai\\.net/g/\\d{1,6}/?");
-		Pattern godList = Pattern.compile("#\\d{1,4}");
+		Pattern mangadexPage = Pattern.compile("https?://mangadex\\.org/title/[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}(?>.*?)");
+		Pattern godList = Pattern.compile("https://wholesomelist\\.com/list/\\d{1,4}");
 
 		Matcher nhGalleryMatcher = nhGallery.matcher(url);
 		if (nhGalleryMatcher.find()) {
@@ -144,6 +145,10 @@ public class Validator {
 		Matcher godListMatcher = godList.matcher(url);
 		if (godListMatcher.find()) {
 			return ArgType.GODLIST;
+		}
+		Matcher mangadexMatcher = mangadexPage.matcher(url);
+		if (mangadexMatcher.find()) {
+			return ArgType.MANGADEX;
 		}
 
 		return ArgType.INVALID;
@@ -170,9 +175,10 @@ public class Validator {
 		Pattern ehPage = Pattern.compile("https?://e[x\\-]hentai\\.org/s/([\\da-f]{10})/(\\d+)-(\\d+)/");
 		Pattern ehGallery = Pattern.compile("https?://e[x\\-]hentai\\.org/g/(\\d+)/([\\da-f]{10})/?");
 		Pattern nhGallery = Pattern.compile("https?://nhentai\\.net/g/\\d{1,6}/?");
-		Pattern godList = Pattern.compile("#\\d{1,4}");
+		Pattern godList = Pattern.compile("https://wholesomelist\\.com/list/\\d{1,4}");
+		Pattern mangadexPage = Pattern.compile("https?://mangadex\\.org/title/[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}(?>.*?)");
 
-		if (!validate(args, argCount, new Pattern[]{ehPage, ehGallery, nhGallery, godList}, channel).isValid()) {
+		if (!validate(args, argCount, new Pattern[]{ehPage, ehGallery, nhGallery, godList, mangadexPage}, channel).isValid()) {
 			return ArgType.INVALID;
 		}
 

@@ -42,7 +42,7 @@ public class Tags {
 				if(args == null) {
 					return;
 				}
-				WHFetcher taginator = new WHFetcher(Integer.parseInt(args.substring(1)));
+				WHFetcher taginator = new WHFetcher(args);
 				String msg = "Tags for " + taginator.getTitle() + ":\n" +
 						"God List tags:\n" +
 						display(taginator.getTags());

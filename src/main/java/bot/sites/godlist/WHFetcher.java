@@ -19,9 +19,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidParameterException;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class WHFetcher {
 	private static final Logger logger = LogManager.getLogger(WHFetcher.class);
@@ -29,6 +32,7 @@ public class WHFetcher {
 	private static final HttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
 	private static JSONObject cachedTable = null;
 	private static long lastCached;
+	private static Pattern listPageRegex = Pattern.compile("https://wholesomelist.com/list/(\\d+)");
 
 	private final String url;
 	private final int id;
@@ -43,13 +47,17 @@ public class WHFetcher {
 
 	private final HashSet<String> tags;
 
-	public WHFetcher(int id) throws IOException {
-		this.id = id;
+	public WHFetcher(String url) throws IOException {
+		Matcher match = listPageRegex.matcher(url);
+		if(!match.find()) {
+			throw new InvalidParameterException("Invalid URL provided to WHFetcher");
+		}
+		id = Integer.parseInt(match.group(1));
 
 		JSONObject table = getCachedTable();
 		JSONObject entry = getEntry(id, table);
 
-		url = "https://wholesomelist.com/list/" + id;
+		this.url = url;
 		link = entry.getString("link");
 
 		title = entry.getString("title");
