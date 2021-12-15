@@ -18,7 +18,8 @@ public class TagList {
 					"brain fuck", "daughter", "torture", "birth", "minigirl", "menstruation", "anorexic", "age regression",
 					"shrinking", "giantess", "navel fuck", "possession", "miniguy", "nipple fuck", "cbt", "low scat", "dicknipples",
 					"nipple birth", "monkey", "nazi", "triple anal", "triple vaginal", "diaper", "aunt", "mother", "father", 
-					"niece", "uncle", "grandfather", "grandmother", "granddaughter", "insect", "anal birth", "skinsuit", "vacbed"
+					"niece", "uncle", "grandfather", "grandmother", "granddaughter", "insect", "anal birth", "skinsuit", "vacbed",
+					"sleeping"
 			)
 	);
 
