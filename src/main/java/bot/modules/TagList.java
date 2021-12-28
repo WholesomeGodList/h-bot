@@ -18,7 +18,8 @@ public class TagList {
 					"brain fuck", "daughter", "torture", "birth", "minigirl", "menstruation", "anorexic", "age regression",
 					"shrinking", "giantess", "navel fuck", "possession", "miniguy", "nipple fuck", "cbt", "low scat", "dicknipples",
 					"nipple birth", "monkey", "nazi", "triple anal", "triple vaginal", "diaper", "aunt", "mother", "father", 
-					"niece", "uncle", "grandfather", "grandmother", "granddaughter", "insect"
+					"niece", "uncle", "grandfather", "grandmother", "granddaughter", "insect", "anal birth", "skinsuit", "vacbed",
+					"sleeping", "worm"
 			)
 	);
 
@@ -34,7 +35,7 @@ public class TagList {
 					"triple penetration", "prolapse", "human pet", "foot licking", "milking", "bondage", "multiple penises",
 					"asphyxiation", "stuck in wall", "human cattle", "clit growth", "ttf threesome", "phimosis", "glory hole",
 					"eggs", "incest", "urination", "prostitution", "fisting", "piss drinking", "inseki", "feminization",
-					"old lady", "old man", "mmm threesome", "fff threesome", "all the way through", "farting"
+					"old lady", "old man", "mmm threesome", "fff threesome", "all the way through", "farting", "tickling"
 			)
 	);
 
