@@ -29,7 +29,7 @@ dependencies {
     implementation 'org.json:json:20211205'
     implementation 'org.apache.httpcomponents:httpclient:4.5.13'
     implementation 'org.apache.httpcomponents:httpcore:4.4.15'
-    implementation 'org.xerial:sqlite-jdbc:3.36.0.2'
+    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
     implementation 'org.apache.commons:commons-dbcp2:2.9.0'
     implementation 'com.google.guava:guava:31.0.1-jre'
 
