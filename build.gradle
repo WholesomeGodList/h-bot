@@ -31,7 +31,7 @@ dependencies {
     implementation 'org.apache.httpcomponents:httpcore:4.4.15'
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
     implementation 'org.apache.commons:commons-dbcp2:2.9.0'
-    implementation 'com.google.guava:guava:31.0.1-jre'
+    implementation 'com.google.guava:guava:31.1-jre'
 
 }
 
